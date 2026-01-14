@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dube's Catering | Premium Catering for All Occasions</title>
+  <style>
+    :root {
+      --orange: #FF6200;
+      --dark-orange: #E55A00;
+      --white: #FFFFFF;
+      --light-gray: #f8f8f8;
+      --text-dark: #333333;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--light-gray);
+      color: var(--text-dark);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--orange) 0%, var(--dark-orange) 100%);
+      color: var(--white);
+      text-align: center;
+      padding: 100px 20px 80px;
+    }
+
+    header h1 {
+      font-size: 3.8rem;
+      margin-bottom: 10px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    header .subtitle {
+      font-size: 1.6rem;
+      font-weight: 300;
+      opacity: 0.95;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    section {
+      margin-bottom: 80px;
+      text-align: center;
+    }
+
+    h2 {
+      color: var(--orange);
+      font-size: 2.8rem;
+      margin-bottom: 25px;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 30px;
+    }
+
+    .service-card {
+      background: white;
+      padding: 40px 25px;
+      border-radius: 12px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .service-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 40px rgba(255,98,0,0.18);
+    }
+
+    .service-card h3 {
+      color: var(--orange);
+      margin-bottom: 15px;
+      font-size: 1.8rem;
+    }
+
+    footer {
+      background: var(--text-dark);
+      color: white;
+      text-align: center;
+      padding: 40px 20px;
+      font-size: 0.95rem;
+    }
+
+    .cta-button {
+      display: inline-block;
+      background: var(--orange);
+      color: white;
+      padding: 16px 40px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 1.3rem;
+      font-weight: bold;
+      margin-top: 30px;
+      transition: background 0.3s;
+    }
+
+    .cta-button:hover {
+      background: var(--dark-orange);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Dube's Catering</h1>
+    <p class="subtitle">Delicious Moments, Perfectly Catered</p>
+  </header>
+
+  <div class="container">
+    <section>
+      <h2>Welcome to Dube's Catering</h2>
+      <p style="font-size: 1.3rem; max-width: 800px; margin: 0 auto;">
+        We bring flavor, elegance, and unforgettable experiences to every occasion. 
+        From intimate gatherings to grand celebrations — trust us to make your event deliciously memorable.
+      </p>
+    </section>
+
+    <section>
+      <h2>Our Services</h2>
+      <div class="services-grid">
+        <div class="service-card">
+          <h3>Weddings</h3>
+          <p>Exquisite menus, elegant presentation, and flawless service for your perfect wedding day.</p>
+        </div>
+        
+        <div class="service-card">
+          <h3>Parties</h3>
+          <p>Fun, vibrant catering solutions for birthdays, anniversaries, and all celebrations big & small.</p>
+        </div>
+        
+        <div class="service-card">
+          <h3>Corporate & Private Events</h3>
+          <p>Professional catering for conferences, launches, family gatherings, and exclusive events.</p>
+        </div>
+      </div>
+
+      <a href="mailto:dubescatering@example.com" class="cta-button">Get Your Free Quote Today!</a>
+    </section>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Dube's Catering. All rights reserved.<br>
+    Contact: dubescatering@example.com | +27 123 456 789</p>
+  </footer>
+
+</body>
+</html>
