@@ -3,95 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feastar | Dube's Catering</title>  
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Dube's Catering | Powered by Taste</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #FFC107; 
-            --secondary: #ffa500; 
-            --dark: #1a1a1a;
+            --bolt-green: #00CD84;
+            --bolt-dark: #2F313F;
+            --bolt-black: #000000;
+            --bolt-gray: #7F7F7F;
+            --bolt-bg: #F3F3F3;
             --white: #ffffff;
-            --gray: #666;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 
         body {
-            background-color: #ffffff;
-            color: var(--dark);
-            line-height: 1.6;
+            background-color: var(--white);
+            color: var(--bolt-dark);
         }
 
-        /* Navigation */
+        /* Navigation - App Style */
         nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 8%;
+            padding: 15px 8%;
             background: var(--white);
             position: sticky;
             top: 0;
             z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #eeeeee;
         }
 
         .logo {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 800;
-            color: var(--dark);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            color: var(--bolt-black);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .logo span {
+            color: var(--bolt-green);
         }
 
         .nav-links {
-            list-style: none;
             display: flex;
-            gap: 30px;
+            gap: 25px;
+            list-style: none;
         }
 
         .nav-links a {
             text-decoration: none;
-            color: var(--dark);
+            color: var(--bolt-dark);
             font-weight: 600;
-            transition: 0.3s;
+            font-size: 15px;
         }
 
-        .nav-links a:hover {
-            color: var(--secondary);
-        }
-
-        /* Buttons */
-        .btn-primary {
-            background: var(--dark);
+        .btn-bolt {
+            background: var(--bolt-green);
             color: var(--white);
-            padding: 14px 28px;
-            border-radius: 50px;
+            padding: 12px 24px;
+            border-radius: 100px; /* Pill shape */
             text-decoration: none;
             font-weight: 700;
-            transition: 0.3s;
-            display: inline-block;
+            font-size: 15px;
+            transition: 0.2s ease-in-out;
+            border: none;
+            cursor: pointer;
         }
 
-        .btn-primary:hover {
-            background: var(--secondary);
-            transform: translateY(-3px);
-            box-shadow: 0 10px 20px rgba(255, 165, 0, 0.2);
+        .btn-bolt:hover {
+            background: #00b373;
+            transform: scale(1.02);
         }
 
-        /* Hero Section */
+        /* Hero - Bolt App Banner Style */
         .hero {
+            padding: 40px 8%;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 80px 8%;
-            gap: 50px;
-            background: linear-gradient(135deg, #fff 60%, #fff8e1 100%);
-            min-height: 80vh;
+            background: var(--white);
+            gap: 40px;
         }
 
         .hero-content {
@@ -99,144 +98,207 @@
         }
 
         .hero-content h1 {
-            font-size: clamp(40px, 5vw, 64px);
+            font-size: 52px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
             line-height: 1.1;
             margin-bottom: 20px;
-            color: var(--dark);
         }
 
         .hero-content p {
             font-size: 18px;
-            color: var(--gray);
-            margin-bottom: 35px;
-            max-width: 550px;
+            color: var(--bolt-gray);
+            margin-bottom: 30px;
+            max-width: 450px;
         }
 
         .hero-image {
-            flex: 1;
-            position: relative;
+            flex: 1.2;
         }
 
         .hero-image img {
             width: 100%;
-            border-radius: 30px;
-            box-shadow: 20px 20px 60px rgba(0,0,0,0.1);
-        }
-
-        /* Service Section */
-        .menu-section {
-            padding: 100px 8%;
-            text-align: center;
-        }
-
-        .menu-section h2 {
-            font-size: 36px;
-            margin-bottom: 50px;
-            position: relative;
-            display: inline-block;
-        }
-
-        .menu-section h2::after {
-            content: '';
-            width: 60px;
-            height: 4px;
-            background: var(--secondary);
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
-        }
-
-        .menu-card {
-            background: var(--white);
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.05);
-            transition: 0.4s;
-            position: relative;
-        }
-
-        .menu-card:hover {
-            transform: translateY(-15px);
-        }
-
-        .menu-card img {
-            width: 100%;
-            height: 350px;
+            height: 450px;
             object-fit: cover;
+            border-radius: 24px;
         }
 
-        .menu-card h3 {
-            padding: 25px;
-            font-size: 22px;
+        /* Category Grid */
+        .section-container {
+            padding: 60px 8%;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+
+        .section-header h2 {
+            font-size: 28px;
             font-weight: 800;
         }
 
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+
+        /* Bolt Style Restaurant Card */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            transition: 0.3s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            opacity: 0.85;
+        }
+
+        .card-img-container {
+            position: relative;
+            height: 200px;
+            width: 100%;
+        }
+
+        .card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        .badge {
+            position: absolute;
+            bottom: 12px;
+            left: 12px;
+            background: var(--white);
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .card-info {
+            padding: 12px 4px;
+        }
+
+        .card-info h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--bolt-gray);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--bolt-dark);
+        }
+
+        .star {
+            color: var(--bolt-green);
+        }
+
         /* Responsive */
-        @media (max-width: 992px) {
-            .hero {
-                flex-direction: column;
-                text-align: center;
-                padding-top: 40px;
-            }
-            .hero-content p {
-                margin: 0 auto 30px;
-            }
-            .nav-links {
-                display: none;
-            }
+        @media (max-width: 768px) {
+            .hero { flex-direction: column; text-align: center; }
+            .nav-links { display: none; }
+            .hero-content h1 { font-size: 36px; }
+            .hero-image img { height: 250px; }
         }
     </style>
 </head>
 <body>
 
     <nav>
-        <div class="logo">Dube's Catering</div>
+        <div class="logo">Bolt <span>Catering</span></div>
         <ul class="nav-links">
             <li><a href="#">Home</a></li>
-            <li><a href="#">Menu</a></li>
-            <li><a href="#">Services</a></li>
-            <li><a href="#">About Us</a></li>
+            <li><a href="#">Packages</a></li>
+            <li><a href="#">Corporate</a></li>
         </ul>
-        <a href="#" class="btn-primary">BOOK US NOW</a>
+        <a href="#" class="btn-bolt">Log in</a>
     </nav>
 
-    <section class="hero">
+    <header class="hero">
         <div class="hero-content">
-            <h1>Elevate Your Events <br>With <span style="color: var(--secondary);">Dube's Catering</span></h1>
-            <p>We provide premium catering services for weddings, corporate events, and private parties with professional chefs and farm-fresh ingredients, you could never go wrong with Dube's catering.</p>
-            <div class="hero-btns">
-                <a href="#" class="btn-primary">Explore Our Menu</a>
-            </div>
+            <h1>Premium catering delivered to your door</h1>
+            <p>From weddings to office lunch, we bring the best flavors of Dube's kitchen to your event.</p>
+            <a href="#" class="btn-bolt" style="padding: 16px 40px; font-size: 18px;">Start Booking</a>
         </div>
         <div class="hero-image">
-            <img src="https://i.postimg.cc/ZqW9VBF8/e0410a04-800d-4497-a49e-0c4fb1a2a823.jpg" alt="Exquisite Catering Display">
+            <img src="https://i.postimg.cc/ZqW9VBF8/e0410a04-800d-4497-a49e-0c4fb1a2a823.jpg" alt="Catering">
         </div>
-    </section>
+    </header>
 
-    <section class="menu-section">
-        <h2>We cater for</h2>
-        <div class="menu-grid">
-            <div class="menu-card">
-                <img src="https://i.postimg.cc/SxWCczdb/we.jpg" alt="Wedding Catering">
-                <h3>WEDDINGS</h3>
+    <main class="section-container">
+        <div class="section-header">
+            <h2>Our Services</h2>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <div class="card-img-container">
+                    <img src="https://i.postimg.cc/SxWCczdb/we.jpg" alt="Wedding">
+                    <div class="badge">FREE DELIVERY</div>
+                </div>
+                <div class="card-info">
+                    <h3>Wedding Excellence</h3>
+                    <div class="card-meta">
+                        <span class="rating"><span class="star">★</span> 4.9</span>
+                        <span>•</span>
+                        <span>Premium Service</span>
+                    </div>
+                </div>
             </div>
-            <div class="menu-card">
-                <img src="https://i.postimg.cc/GhTfYrft/party.jpg" alt="Party Catering">
-                <h3>PARTIES</h3>
+
+            <div class="card">
+                <div class="card-img-container">
+                    <img src="https://i.postimg.cc/GhTfYrft/party.jpg" alt="Party">
+                    <div class="badge">POPULAR</div>
+                </div>
+                <div class="card-info">
+                    <h3>Private Parties</h3>
+                    <div class="card-meta">
+                        <span class="rating"><span class="star">★</span> 4.7</span>
+                        <span>•</span>
+                        <span>Buffet Style</span>
+                    </div>
+                </div>
             </div>
-            <div class="menu-card">
-                <img src="https://i.postimg.cc/HnXPq9Xx/event.jpg" alt="Corporate Events">
-                <h3>EVENTS</h3>
+
+            <div class="card">
+                <div class="card-img-container">
+                    <img src="https://i.postimg.cc/HnXPq9Xx/event.jpg" alt="Event">
+                </div>
+                <div class="card-info">
+                    <h3>Corporate Events</h3>
+                    <div class="card-meta">
+                        <span class="rating"><span class="star">★</span> 4.8</span>
+                        <span>•</span>
+                        <span>Formal Dining</span>
+                    </div>
+                </div>
             </div>
         </div>
-    </section>
+    </main>
 
 </body>
 </html>
