@@ -292,6 +292,33 @@
                 </div>
             </a>
         </div>
+        <section class="section-container" style="background: #f9f9f9; border-radius: 20px; margin: 20px;">
+    <h2>Book Now</h2>
+    <input type="text" id="custName" placeholder="Your Name" style="padding:10px; margin-bottom:10px; width:100%;">
+    <select id="svcType" style="padding:10px; margin-bottom:10px; width:100%;">
+        <option value="Wedding">Wedding Buffet</option>
+        <option value="Party">Party Box</option>
+    </select>
+    <button onclick="sendBooking()" class="btn-bolt">Submit Request</button>
+    <p id="msg"></p>
+</section>
+
+<script>
+    async function sendBooking() {
+        const name = document.getElementById('custName').value;
+        const service = document.getElementById('svcType').value;
+
+        // This "fetches" the backend we just wrote
+        const response = await fetch('/book', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ customerName: name, serviceType: service })
+        });
+
+        const data = await response.json();
+        document.getElementById('msg').innerText = data.message;
+    }
+</script>
     </main>
 
 </body>
