@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login - Adaptive Sheet/Modal</title>
+  <title>Sign In - Google</title>
   <style>
     * {
       margin: 0;
@@ -12,24 +12,21 @@
     }
 
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      /* --- Added Background Image --- */
-      background: 
-        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), 
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
         url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      /* ------------------------------ */
       min-height: 100dvh;
       display: grid;
       place-items: center;
     }
 
-    /* ------------------- Trigger Button ------------------- */
     .auth-trigger {
-      padding: 16px 40px;
-      font-size: 1.1rem;
+      padding: 16px 44px;
+      font-size: 1.15rem;
       font-weight: 600;
       background: #0066ff;
       color: white;
@@ -43,19 +40,19 @@
     .auth-trigger:hover {
       background: #0055dd;
       transform: translateY(-2px);
-      box-shadow: 0 15px 30px rgba(0, 102, 255, 0.4);
+      box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4);
     }
 
-    /* ------------------- Bottom Sheet (Mobile) ------------------- */
+    /* Bottom Sheet (Mobile) */
     .bottom-sheet {
       position: fixed;
       inset: auto 0 0 0;
       background: white;
       border-radius: 24px 24px 0 0;
-      box-shadow: 0 -8px 32px rgba(0,0,0,0.25);
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.28);
       transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
-      max-height: 92dvh;
+      transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 90dvh;
       overflow-y: auto;
       z-index: 1000;
       display: none;
@@ -67,24 +64,24 @@
     }
 
     .sheet-handle {
-      width: 42px;
+      width: 44px;
       height: 5px;
-      background: #ddd;
+      background: #ccc;
       border-radius: 999px;
-      margin: 16px auto;
+      margin: 18px auto;
     }
 
-    /* ------------------- Modal (Desktop) ------------------- */
+    /* Modal (Desktop) */
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px); /* Enhanced blur for better focus */
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
       display: grid;
       place-items: center;
       opacity: 0;
       visibility: hidden;
-      transition: all 0.3s ease;
+      transition: all 0.35s ease;
       z-index: 900;
     }
 
@@ -99,9 +96,9 @@
       max-width: 420px;
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-      transform: scale(0.9);
-      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 25px 60px -10px rgba(0,0,0,0.5);
+      transform: scale(0.92);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
     }
 
@@ -109,146 +106,119 @@
       transform: scale(1);
     }
 
-    /* Shared form styles */
-    .form-container {
-      padding: 2.5rem 2rem;
+    /* Common content styles */
+    .auth-container {
+      padding: 3rem 2.5rem;
+      text-align: center;
     }
 
     h2 {
-      text-align: center;
-      margin-bottom: 1.8rem;
-      font-size: 1.8rem;
+      font-size: 1.9rem;
+      margin-bottom: 0.8rem;
       color: #111;
-      letter-spacing: -0.5px;
+      font-weight: 700;
+      letter-spacing: -0.4px;
     }
 
-    .form-group {
-      margin-bottom: 1.4rem;
+    p.subtitle {
+      color: #555;
+      margin-bottom: 2.5rem;
+      font-size: 1.05rem;
     }
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-      color: #444;
-      font-size: 0.9rem;
-    }
-
-    input {
+    .google-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
       width: 100%;
-      padding: 13px 16px;
+      max-width: 340px;
+      margin: 0 auto;
+      padding: 14px 24px;
+      background: white;
       border: 1px solid #ddd;
       border-radius: 10px;
-      font-size: 1rem;
-      transition: all 0.2s;
-    }
-
-    input:focus {
-      outline: none;
-      border-color: #0066ff;
-      box-shadow: 0 0 0 4px rgba(0,102,255,0.1);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 14px;
-      background: #0066ff;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-size: 1.1rem;
-      font-weight: 600;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: #333;
       cursor: pointer;
-      margin-top: 1rem;
-      transition: background 0.2s;
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
-    .login-btn:hover {
-      background: #0055dd;
+    .google-btn:hover {
+      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+      transform: translateY(-1px);
+    }
+
+    .google-btn img {
+      width: 24px;
+      height: 24px;
     }
 
     .close-btn {
       position: absolute;
       top: 16px;
       right: 20px;
-      background: #f0f2f5;
+      background: #f1f3f5;
       border: none;
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      font-size: 1.2rem;
-      color: #777;
+      font-size: 1.4rem;
+      color: #666;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       transition: background 0.2s;
-      z-index: 10;
     }
 
     .close-btn:hover {
-      background: #e4e6eb;
+      background: #e5e7eb;
     }
 
     /* Responsive */
     @media (min-width: 768px) {
-      .bottom-sheet {
-        display: none !important;
-      }
+      .bottom-sheet { display: none !important; }
     }
 
     @media (max-width: 767px) {
-      .modal-overlay {
-        display: none !important;
-      }
+      .modal-overlay { display: none !important; }
     }
   </style>
 </head>
 <body>
 
-  <button class="auth-trigger" id="openAuth">Sign In to Dashboard</button>
+  <button class="auth-trigger" id="openAuth">Sign In with Google</button>
 
+  <!-- Mobile Bottom Sheet -->
   <div class="bottom-sheet" id="bottomSheet">
     <div class="sheet-handle"></div>
-    <div class="form-container">
+    <div class="auth-container">
       <button class="close-btn" id="closeSheet">×</button>
-      <h2>Welcome Back</h2>
-      
-      <form>
-        <div class="form-group">
-          <label for="email">Email Address</label>
-          <input type="email" id="email" placeholder="name@company.com" required>
-        </div>
+      <h2>Welcome</h2>
+      <p class="subtitle">Sign in to continue to your dashboard</p>
 
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="••••••••" required>
-        </div>
-
-        <button type="submit" class="login-btn">Continue</button>
-      </form>
+      <button class="google-btn" type="button">
+        <img src="https://www.google.com/favicon.ico" alt="Google">
+        Continue with Google
+      </button>
     </div>
   </div>
 
+  <!-- Desktop Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <button class="close-btn" id="closeModal">×</button>
-      <div class="form-container">
-        <h2>Welcome Back</h2>
+      <div class="auth-container">
+        <h2>Sign In</h2>
+        <p class="subtitle">Use your Google account to continue</p>
 
-        <form>
-          <div class="form-group">
-            <label for="emailDesktop">Email Address</label>
-            <input type="email" id="emailDesktop" placeholder="name@company.com" required>
-          </div>
-
-          <div class="form-group">
-            <label for="passwordDesktop">Password</label>
-            <input type="password" id="passwordDesktop" placeholder="••••••••" required>
-          </div>
-
-          <button type="submit" class="login-btn">Continue</button>
-        </form>
+        <button class="google-btn" type="button">
+          <img src="https://www.google.com/favicon.ico" alt="Google">
+          Continue with Google
+        </button>
       </div>
     </div>
   </div>
@@ -263,7 +233,7 @@
     function openAuth() {
       if (window.innerWidth < 768) {
         bottomSheet.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Prevent scrolling
+        document.body.style.overflow = 'hidden';
       } else {
         modal.classList.add('active');
       }
@@ -272,13 +242,13 @@
     function closeAuth() {
       bottomSheet.classList.remove('active');
       modal.classList.remove('active');
-      document.body.style.overflow = ''; 
+      document.body.style.overflow = '';
     }
 
     openBtn.addEventListener('click', openAuth);
     closeSheet.addEventListener('click', closeAuth);
     closeModal.addEventListener('click', closeAuth);
-
+    
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeAuth();
     });
