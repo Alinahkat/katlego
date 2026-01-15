@@ -1,237 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Alina App</title>
-    <style>
-        /* --- General Styles --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f0f2f5;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign In - Google</title>
 
-        /* --- Centered Login Button --- */
-        #main-login-btn {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-            transition: transform 0.2s, box-shadow 0.2s;
-            /* Start hidden to prevent flickering while we check auth status */
-            display: none; 
-        }
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- jwt-decode for client-side token decoding -->
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 
-        #main-login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-        }
+  <!-- Firebase SDK v9 (modular) -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, signInWithCredential, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-        /* Loading Text */
-        #loading-msg {
-            color: #666;
-            font-size: 1.1rem;
-        }
+    // Your Firebase configuration (this is safe to expose)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
+      authDomain: "alina-b5355.firebaseapp.com",
+      projectId: "alina-b5355",
+      storageBucket: "alina-b5355.firebasestorage.app",
+      messagingSenderId: "926134449790",
+      appId: "1:926134449790:web:759652d3fa38199fab4a2f",
+      measurementId: "G-DFK1VC9PPS"
+    };
 
-        /* --- Modal/Bottom Sheet Overlay --- */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none; 
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-        .overlay.active {
-            display: flex;
-            opacity: 1;
-        }
+    // Make auth available globally for the callback
+    window.firebaseAuth = auth;
+  </script>
 
-        /* --- Modal Container --- */
-        .modal {
-            background: white;
-            width: 90%;
-            max-width: 400px;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            text-align: center;
-            position: relative;
-            transform: scale(0.9);
-            transition: transform 0.3s ease;
-        }
-
-        .overlay.active .modal {
-            transform: scale(1);
-        }
-
-        .modal h2 {
-            margin-top: 0;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        /* --- Close Button --- */
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #888;
-        }
-
-        /* --- Google Sign-In Button Styling --- */
-        .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            background-color: white;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
-            height: 50px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-family: 'Roboto', sans-serif;
-            font-weight: 500;
-            color: #3c4043;
-        }
-
-        .google-btn:hover {
-            background-color: #f7f8f8;
-            border-color: #d2e3fc;
-        }
-
-        .google-btn img {
-            width: 20px;
-            height: 20px;
-            margin-right: 12px;
-        }
-
-        /* --- MOBILE SPECIFIC: Bottom Sheet Logic --- */
-        @media (max-width: 768px) {
-            .overlay {
-                align-items: flex-end; 
-            }
-
-            .modal {
-                width: 100%;
-                max-width: 100%;
-                border-radius: 20px 20px 0 0;
-                padding: 30px 20px 50px 20px;
-                transform: translateY(100%);
-                transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            }
-
-            .overlay.active .modal {
-                transform: translateY(0);
-            }
-        }
-    </style>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+                  url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+    }
+    .auth-trigger {
+      padding: 16px 44px;
+      font-size: 1.15rem;
+      font-weight: 600;
+      background: #0066ff;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(0, 102, 255, 0.3);
+      transition: all 0.3s ease;
+    }
+    .auth-trigger:hover {
+      background: #0055dd;
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4);
+    }
+    .bottom-sheet {
+      position: fixed;
+      inset: auto 0 0 0;
+      background: white;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.28);
+      transform: translateY(100%);
+      transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 90dvh;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+    .bottom-sheet.active { transform: translateY(0); display: block; }
+    .sheet-handle {
+      width: 44px;
+      height: 5px;
+      background: #ccc;
+      border-radius: 999px;
+      margin: 18px auto;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.35s ease;
+      z-index: 900;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -10px rgba(0,0,0,0.5);
+      transform: scale(0.92);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .auth-container {
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+    h2 { font-size: 1.9rem; margin-bottom: 0.8rem; color: #111; font-weight: 700; }
+    p.subtitle { color: #555; margin-bottom: 2.5rem; font-size: 1.05rem; }
+    .g_id_signin { margin: 0 auto; }
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: #f1f3f5;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .close-btn:hover { background: #e5e7eb; }
+    @media (min-width: 768px) { .bottom-sheet { display: none !important; } }
+    @media (max-width: 767px) { .modal-overlay { display: none !important; } }
+  </style>
 </head>
 <body>
 
-    <div id="loading-msg">Checking authentication...</div>
+  <button class="auth-trigger" id="openAuth">Sign In with Google</button>
 
-    <button id="main-login-btn">Log In</button>
+  <!-- Mobile Bottom Sheet -->
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="auth-container">
+      <button class="close-btn" id="closeSheet">×</button>
+      <h2>Welcome</h2>
+      <p class="subtitle">Sign in to continue to your dashboard</p>
 
-    <div class="overlay" id="modal-overlay">
-        <div class="modal">
-            <button class="close-btn" id="close-modal">&times;</button>
-            <h2>Welcome Back</h2>
-            <p style="color: #666; margin-bottom: 25px;">Sign in to access your account</p>
-            
-            <button class="google-btn" id="google-signin-btn">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google Logo">
-                Sign in with Google
-            </button>
-        </div>
+      <div id="g_id_onload"
+           data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="continue_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Added onAuthStateChanged to the import list
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <!-- Desktop Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">×</button>
+      <div class="auth-container">
+        <h2>Sign In</h2>
+        <p class="subtitle">Use your Google account to continue</p>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
-            authDomain: "alina-b5355.firebaseapp.com",
-            projectId: "alina-b5355",
-            storageBucket: "alina-b5355.firebasestorage.app",
-            messagingSenderId: "926134449790",
-            appId: "1:926134449790:web:759652d3fa38199fab4a2f",
-            measurementId: "G-DFK1VC9PPS"
-        };
+        <div id="g_id_onload"
+             data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="continue_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
+      </div>
+    </div>
+  </div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const provider = new GoogleAuthProvider();
+  <script>
+    // === IMPORTANT ===
+    // Replace this with your REAL Google OAuth 2.0 Web Client ID
+    const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
 
-        const mainBtn = document.getElementById('main-login-btn');
-        const overlay = document.getElementById('modal-overlay');
-        const closeBtn = document.getElementById('close-modal');
-        const googleBtn = document.getElementById('google-signin-btn');
-        const loadingMsg = document.getElementById('loading-msg');
+    // Called when user completes Google Sign-In
+    function handleCredentialResponse(response) {
+      try {
+        const idToken = response.credential;
+        const payload = jwt_decode(idToken);
 
-        // --- AUTH LOGIC ---
+        console.log("Google ID Token:", idToken);
+        console.log("User Info:", payload);
 
-        // 1. Check if user is ALREADY logged in (Persistence)
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // User is signed in, redirect immediately
-                console.log("User already logged in, redirecting...");
-                window.location.href = "profile.html";
-            } else {
-                // User is signed out, show the login button and hide loading text
-                loadingMsg.style.display = "none";
-                mainBtn.style.display = "block";
-            }
-        });
+        // Option 1: Firebase Authentication (recommended)
+        const credential = GoogleAuthProvider.credential(idToken);
+        window.firebaseAuth.signInWithCredential(credential)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            alert(`Welcome, ${user.displayName || payload.name}!\nYou're now signed in with Firebase!`);
+            // Redirect to your dashboard
+            // window.location.href = "/dashboard.html";
+          })
+          .catch((error) => {
+            console.error("Firebase sign-in failed:", error);
+            alert("Sign-in failed. Please try again.");
+          });
 
-        // 2. Handle Login Button Click
-        googleBtn.addEventListener('click', () => {
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    // Successful login
-                    console.log("Login success");
-                    // Redirect to profile
-                    window.location.href = "profile.html";
-                })
-                .catch((error) => {
-                    console.error("Error", error);
-                    alert("Login failed: " + error.message);
-                });
-        });
+        // Option 2: If you don't want Firebase auth yet - just show info
+        // alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
 
-        // --- UI LOGIC ---
-        mainBtn.addEventListener('click', () => overlay.classList.add('active'));
-        
-        const closeModal = () => overlay.classList.remove('active');
-        closeBtn.addEventListener('click', closeModal);
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) closeModal();
-        });
+      } catch (error) {
+        console.error("Error handling credential:", error);
+        alert("Something went wrong during sign-in.");
+      }
+    }
 
-    </script>
+    // UI Controls
+    const openBtn = document.getElementById('openAuth');
+    const bottomSheet = document.getElementById('bottomSheet');
+    const modal = document.getElementById('modalOverlay');
+    const closeSheet = document.getElementById('closeSheet');
+    const closeModal = document.getElementById('closeModal');
+
+    function openAuth() {
+      if (window.innerWidth < 768) {
+        bottomSheet.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      } else {
+        modal.classList.add('active');
+      }
+    }
+
+    function closeAuth() {
+      bottomSheet.classList.remove('active');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', openAuth);
+    closeSheet.addEventListener('click', closeAuth);
+    closeModal.addEventListener('click', closeAuth);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeAuth(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAuth(); });
+  </script>
 </body>
 </html>
