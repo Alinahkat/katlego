@@ -28,11 +28,19 @@
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
             transition: transform 0.2s, box-shadow 0.2s;
+            /* Start hidden to prevent flickering while we check auth status */
+            display: none; 
         }
 
         #main-login-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+        }
+
+        /* Loading Text */
+        #loading-msg {
+            color: #666;
+            font-size: 1.1rem;
         }
 
         /* --- Modal/Bottom Sheet Overlay --- */
@@ -43,7 +51,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            display: none; /* Hidden by default */
+            display: none; 
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -123,25 +131,27 @@
         /* --- MOBILE SPECIFIC: Bottom Sheet Logic --- */
         @media (max-width: 768px) {
             .overlay {
-                align-items: flex-end; /* Align to bottom for mobile */
+                align-items: flex-end; 
             }
 
             .modal {
                 width: 100%;
                 max-width: 100%;
-                border-radius: 20px 20px 0 0; /* Rounded top corners only */
-                padding: 30px 20px 50px 20px; /* Extra padding at bottom */
-                transform: translateY(100%); /* Start off-screen */
+                border-radius: 20px 20px 0 0;
+                padding: 30px 20px 50px 20px;
+                transform: translateY(100%);
                 transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
             }
 
             .overlay.active .modal {
-                transform: translateY(0); /* Slide up */
+                transform: translateY(0);
             }
         }
     </style>
 </head>
 <body>
+
+    <div id="loading-msg">Checking authentication...</div>
 
     <button id="main-login-btn">Log In</button>
 
@@ -159,11 +169,10 @@
     </div>
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Added onAuthStateChanged to the import list
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Your web app's Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
             authDomain: "alina-b5355.firebaseapp.com",
@@ -174,65 +183,55 @@
             measurementId: "G-DFK1VC9PPS"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // DOM Elements
         const mainBtn = document.getElementById('main-login-btn');
         const overlay = document.getElementById('modal-overlay');
         const closeBtn = document.getElementById('close-modal');
         const googleBtn = document.getElementById('google-signin-btn');
+        const loadingMsg = document.getElementById('loading-msg');
 
-        // --- UI Logic ---
+        // --- AUTH LOGIC ---
 
-        // Open Modal
-        mainBtn.addEventListener('click', () => {
-            overlay.classList.add('active');
-        });
-
-        // Close Modal
-        const closeModal = () => {
-            overlay.classList.remove('active');
-        };
-
-        closeBtn.addEventListener('click', closeModal);
-        
-        // Close if clicking outside the modal (on the background)
-        overlay.addEventListener('click', (e) => {
-            if (e.target === overlay) {
-                closeModal();
+        // 1. Check if user is ALREADY logged in (Persistence)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in, redirect immediately
+                console.log("User already logged in, redirecting...");
+                window.location.href = "profile.html";
+            } else {
+                // User is signed out, show the login button and hide loading text
+                loadingMsg.style.display = "none";
+                mainBtn.style.display = "block";
             }
         });
 
-        // --- Auth Logic ---
-
+        // 2. Handle Login Button Click
         googleBtn.addEventListener('click', () => {
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    // This gives you a Google Access Token.
-                    const credential = GoogleAuthProvider.credentialFromResult(result);
-                    const token = credential.accessToken;
-                    // The signed-in user info.
-                    const user = result.user;
-
-                    console.log("User signed in:", user);
-                    alert(`Hello, ${user.displayName}! You are logged in.`);
-                    closeModal();
-                    
-                    // Optional: Hide login button or redirect here
-                    mainBtn.textContent = "Logged In";
-                    mainBtn.disabled = true;
+                    // Successful login
+                    console.log("Login success");
+                    // Redirect to profile
+                    window.location.href = "profile.html";
                 })
                 .catch((error) => {
-                    // Handle Errors here.
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-                    console.error("Error during sign in:", errorCode, errorMessage);
-                    alert("Login failed: " + errorMessage);
+                    console.error("Error", error);
+                    alert("Login failed: " + error.message);
                 });
         });
+
+        // --- UI LOGIC ---
+        mainBtn.addEventListener('click', () => overlay.classList.add('active'));
+        
+        const closeModal = () => overlay.classList.remove('active');
+        closeBtn.addEventListener('click', closeModal);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) closeModal();
+        });
+
     </script>
 </body>
 </html>
