@@ -1,165 +1,266 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Profile</title>
-    <style>
-        /* --- Page Layout --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your Profile - Alinah</title>
 
-        /* --- Profile Card --- */
-        .profile-card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 90%;
-            max-width: 350px;
-            display: none; /* Hidden until data is loaded */
-            animation: fadeIn 0.5s ease;
-        }
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+  <!-- Firebase SDK v10 (modular) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { 
+      getAuth, 
+      signInWithCredential, 
+      GoogleAuthProvider, 
+      onAuthStateChanged, 
+      signOut,
+      updateProfile 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+    
+    import { 
+      getDatabase, 
+      ref, 
+      set, 
+      onValue 
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-        /* --- Profile Image --- */
-        .profile-pic {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #e1e4e8;
-            margin-bottom: 20px;
-        }
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
+      authDomain: "alina-b5355.firebaseapp.com",
+      projectId: "alina-b5355",
+      storageBucket: "alina-b5355.firebasestorage.app",
+      messagingSenderId: "926134449790",
+      appId: "1:926134449790:web:759652d3fa38199fab4a2f",
+      measurementId: "G-DFK1VC9PPS",
+      databaseURL: "https://alina-b5355-default-rtdb.firebaseio.com/"
+    };
 
-        /* --- Typography --- */
-        h1 {
-            font-size: 1.5rem;
-            color: #333;
-            margin: 0 0 10px 0;
-        }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-        .email {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 30px;
-            background: #f8f9fa;
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-        }
+    window.firebaseApp = { 
+      auth, db, GoogleAuthProvider, signInWithCredential, updateProfile, signOut,
+      ref, set, onValue, onAuthStateChanged 
+    };
+  </script>
 
-        /* --- Logout Button --- */
-        .logout-btn {
-            background-color: #ff4757;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            width: 100%;
-        }
-
-        .logout-btn:hover {
-            background-color: #ff6b81;
-            transform: translateY(-1px);
-        }
-
-        .logout-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* --- Loading State --- */
-        #loading {
-            color: #666;
-            font-size: 1.1rem;
-        }
-    </style>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
+                  url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
+      background-size: cover;
+      background-attachment: fixed;
+      min-height: 100dvh;
+      color: #111;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .profile-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 480px;
+      text-align: center;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #0066ff;
+      margin: 1rem auto 1.5rem;
+      box-shadow: 0 8px 20px rgba(0,102,255,0.25);
+    }
+    h1 { font-size: 2.2rem; margin-bottom: 0.5rem; }
+    .email { color: #555; margin-bottom: 2rem; font-size: 1.1rem; }
+    .name-container {
+      margin: 2rem 0;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 16px;
+    }
+    .current-name {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      min-height: 2.4rem;
+      word-break: break-word;
+    }
+    .edit-area {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    input[type="text"] {
+      flex: 1;
+      min-width: 240px;
+      padding: 12px 16px;
+      font-size: 1.1rem;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: #0066ff; }
+    button {
+      padding: 12px 28px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .btn-save { background: #00c853; color: white; }
+    .btn-save:hover { background: #00b140; }
+    .btn-google { background: #4285f4; color: white; padding: 14px 40px; font-size: 1.1rem; }
+    .btn-google:hover { background: #3367d6; }
+    .btn-logout { background: #e74c3c; color: white; margin-top: 2rem; }
+    .btn-logout:hover { background: #c0392b; }
+    .hidden { display: none !important; }
+    .loading { opacity: 0.7; }
+  </style>
 </head>
 <body>
 
-    <div id="loading">Loading Profile...</div>
+<div class="profile-card" id="loadingScreen">
+  <h1>Loading Profile...</h1>
+</div>
 
-    <div class="profile-card" id="profile-card">
-        <img id="user-pic" src="" alt="Profile Picture" class="profile-pic">
-        <h1 id="user-name">User Name</h1>
-        <div class="email" id="user-email">email@example.com</div>
-        <button class="logout-btn" id="logout-btn">Log Out</button>
+<div class="profile-card hidden" id="loginScreen">
+  <h1>Welcome</h1>
+  <p style="margin: 1.5rem 0; color:#555;">Sign in with Google to view and edit your profile</p>
+  
+  <div id="g_id_onload"
+       data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+       data-callback="handleGoogleSignIn"
+       data-auto_prompt="false">
+  </div>
+  <div class="g_id_signin"
+       data-type="standard"
+       data-size="large"
+       data-theme="outline"
+       data-text="continue_with"
+       data-shape="rectangular"
+       data-logo_alignment="left">
+  </div>
+</div>
+
+<div class="profile-card hidden" id="profileScreen">
+  <img id="avatar" class="avatar" src="" alt="Profile picture">
+  <h1 id="greeting">Hi!</h1>
+  <div class="email" id="userEmail"></div>
+
+  <div class="name-container">
+    <div class="current-name" id="displayName">Loading your name...</div>
+    
+    <div class="edit-area">
+      <input type="text" id="nameInput" placeholder="Enter your new display name" />
+      <button class="btn-save" onclick="saveName()">Save Name</button>
     </div>
+  </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  <button class="btn-logout" onclick="logout()">Log Out</button>
+</div>
 
-        // Your Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
-            authDomain: "alina-b5355.firebaseapp.com",
-            projectId: "alina-b5355",
-            storageBucket: "alina-b5355.firebasestorage.app",
-            messagingSenderId: "926134449790",
-            appId: "1:926134449790:web:759652d3fa38199fab4a2f",
-            measurementId: "G-DFK1VC9PPS"
-        };
+<script>
+  // Replace with your REAL Google OAuth Web Client ID
+  const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+  async function handleGoogleSignIn(response) {
+    try {
+      const credential = window.firebaseApp.GoogleAuthProvider.credential(response.credential);
+      await window.firebaseApp.signInWithCredential(window.firebaseApp.auth, credential);
+      // onAuthStateChanged will handle the rest
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      alert("Sign in failed. Please try again.");
+    }
+  }
 
-        // UI Elements
-        const loadingDiv = document.getElementById('loading');
-        const cardDiv = document.getElementById('profile-card');
-        const picEl = document.getElementById('user-pic');
-        const nameEl = document.getElementById('user-name');
-        const emailEl = document.getElementById('user-email');
-        const logoutBtn = document.getElementById('logout-btn');
+  function showProfile(user) {
+    document.getElementById('loadingScreen').classList.add('hidden');
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('profileScreen').classList.remove('hidden');
 
-        // Check Auth State
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // 1. User is logged in. Populate data.
-                
-                // Use a default placeholder if Google doesn't provide a photo
-                const photoURL = user.photoURL || 'https://via.placeholder.com/100'; 
-                const displayName = user.displayName || 'User';
-                const email = user.email;
+    document.getElementById('avatar').src = user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || 'User')}&size=128`;
+    document.getElementById('userEmail').textContent = user.email;
+    document.getElementById('greeting').textContent = `Hi${user.displayName ? ' ' + user.displayName.split(' ')[0] : ''}!`;
 
-                picEl.src = photoURL;
-                nameEl.textContent = displayName;
-                emailEl.textContent = email;
+    const nameRef = window.firebaseApp.ref(window.firebaseApp.db, `users/${user.uid}/displayName`);
 
-                // 2. Hide loading, Show card
-                loadingDiv.style.display = 'none';
-                cardDiv.style.display = 'block';
+    window.firebaseApp.onValue(nameRef, (snapshot) => {
+      const savedName = snapshot.val();
+      const nameDisplay = document.getElementById('displayName');
+      const input = document.getElementById('nameInput');
 
-            } else {
-                // 3. Not logged in? Redirect to login page
-                window.location.href = "index.html";
-            }
-        });
+      if (savedName) {
+        nameDisplay.textContent = savedName;
+        input.value = savedName;
+      } else {
+        // First time - use Google name & auto save
+        const defaultName = user.displayName?.trim() || "Alinah";
+        nameDisplay.textContent = defaultName;
+        input.value = defaultName;
+        saveName(defaultName);
+      }
+    });
+  }
 
-        // Logout Logic
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            }).catch((error) => {
-                console.error("Sign out error", error);
-            });
-        });
-    </script>
+  async function saveName(defaultName = null) {
+    const user = window.firebaseApp.auth.currentUser;
+    if (!user) return;
+
+    const input = document.getElementById('nameInput');
+    const newName = (defaultName || input.value.trim());
+
+    if (!newName) {
+      alert("Please enter a name!");
+      return;
+    }
+
+    try {
+      // Optional: update Firebase Auth displayName too
+      await window.firebaseApp.updateProfile(user, { displayName: newName });
+
+      // Save to Realtime Database (main persistent storage)
+      const nameRef = window.firebaseApp.ref(window.firebaseApp.db, `users/${user.uid}/displayName`);
+      await window.firebaseApp.set(nameRef, newName);
+
+      document.getElementById('displayName').textContent = newName;
+      alert("Name saved successfully! ✓");
+    } catch (err) {
+      console.error(err);
+      alert("Couldn't save name. Please try again.");
+    }
+  }
+
+  function logout() {
+    window.firebaseApp.signOut(window.firebaseApp.auth)
+      .then(() => window.location.reload())
+      .catch(err => console.error("Sign out error:", err));
+  }
+
+  // Listen for auth state (handles auto-login & page refresh)
+  window.firebaseApp.onAuthStateChanged(window.firebaseApp.auth, (user) => {
+    if (user) {
+      showProfile(user);
+    } else {
+      document.getElementById('loadingScreen').classList.add('hidden');
+      document.getElementById('profileScreen').classList.add('hidden');
+      document.getElementById('loginScreen').classList.remove('hidden');
+    }
+  });
+</script>
 </body>
 </html>
