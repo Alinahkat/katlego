@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Profile</title>
+    <title>Email & Password Login</title>
     <style>
-        /* --- Page Layout --- */
+        /* --- Styles --- */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             background-color: #f0f2f5;
@@ -16,17 +16,20 @@
             margin: 0;
         }
 
-        /* --- Profile Card --- */
-        .profile-card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            text-align: center;
+        .container {
             width: 90%;
-            max-width: 350px;
-            display: none; /* Hidden until data is loaded */
-            animation: fadeIn 0.5s ease;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Card Styling */
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.4s ease;
         }
 
         @keyframes fadeIn {
@@ -34,77 +37,124 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* --- Profile Image --- */
+        /* Inputs */
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+            font-size: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+
+        .btn-google { background-color: #fff; border: 1px solid #ddd; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-google:hover { background-color: #f8f9fa; }
+
+        .btn-danger { background-color: #dc3545; color: white; margin-top: 20px;}
+
+        /* Profile Styles */
         .profile-pic {
             width: 100px;
             height: 100px;
             border-radius: 50%;
-            object-fit: cover;
-            border: 4px solid #e1e4e8;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            border: 3px solid #007bff;
+            background-color: #eee; /* Placeholder color */
         }
 
-        /* --- Typography --- */
-        h1 {
-            font-size: 1.5rem;
-            color: #333;
-            margin: 0 0 10px 0;
+        .divider {
+            margin: 20px 0;
+            border-top: 1px solid #eee;
+            position: relative;
+        }
+        .divider span {
+            background: white;
+            padding: 0 10px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #777;
+            font-size: 0.8rem;
         }
 
-        .email {
-            color: #666;
-            font-size: 0.95rem;
-            margin-bottom: 30px;
-            background: #f8f9fa;
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 15px;
-        }
-
-        /* --- Logout Button --- */
-        .logout-btn {
-            background-color: #ff4757;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
-            width: 100%;
-        }
-
-        .logout-btn:hover {
-            background-color: #ff6b81;
-            transform: translateY(-1px);
-        }
-
-        .logout-btn:active {
-            transform: translateY(1px);
-        }
-
-        /* --- Loading State --- */
-        #loading {
-            color: #666;
-            font-size: 1.1rem;
-        }
+        /* Profile Input Group */
+        .input-group { display: flex; gap: 8px; margin-top: 20px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
     </style>
 </head>
 <body>
 
-    <div id="loading">Loading Profile...</div>
+    <div class="container">
+        <div id="loading">Initializing App...</div>
 
-    <div class="profile-card" id="profile-card">
-        <img id="user-pic" src="" alt="Profile Picture" class="profile-pic">
-        <h1 id="user-name">User Name</h1>
-        <div class="email" id="user-email">email@example.com</div>
-        <button class="logout-btn" id="logout-btn">Log Out</button>
+        <div id="login-card" class="card">
+            <h2>Welcome Back</h2>
+            <p style="color:#666; margin-bottom:20px;">Enter your details to access your account</p>
+
+            <input type="email" id="email" class="auth-input" placeholder="Email Address">
+            <input type="password" id="password" class="auth-input" placeholder="Password">
+
+            <button id="login-btn" class="btn btn-primary">Log In</button>
+            <button id="register-btn" class="btn btn-secondary">Register New Account</button>
+
+            <div class="divider"><span>OR</span></div>
+
+            <button id="google-btn" class="btn btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G">
+                Sign in with Google
+            </button>
+        </div>
+
+        <div id="profile-card" class="card">
+            <img id="user-pic" src="https://via.placeholder.com/100" alt="Profile" class="profile-pic">
+            
+            <h2 id="display-name">Loading...</h2>
+            <p id="user-email">email@example.com</p>
+
+            <div class="input-group">
+                <input type="text" id="name-input" placeholder="Set custom display name">
+                <button id="save-btn" class="btn btn-primary" style="width: auto; margin:0;">Save</button>
+            </div>
+
+            <button id="logout-btn" class="btn btn-danger">Log Out</button>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Added createUserWithEmailAndPassword and signInWithEmailAndPassword
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
+        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // Your Config
         const firebaseConfig = {
@@ -114,52 +164,119 @@
             storageBucket: "alina-b5355.firebasestorage.app",
             messagingSenderId: "926134449790",
             appId: "1:926134449790:web:759652d3fa38199fab4a2f",
-            measurementId: "G-DFK1VC9PPS"
+            measurementId: "G-DFK1VC9PPS",
+            databaseURL: "https://alina-b5355-default-rtdb.firebaseio.com/"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const db = getDatabase(app);
+        const provider = new GoogleAuthProvider();
 
-        // UI Elements
+        // UI References
         const loadingDiv = document.getElementById('loading');
-        const cardDiv = document.getElementById('profile-card');
-        const picEl = document.getElementById('user-pic');
-        const nameEl = document.getElementById('user-name');
+        const loginCard = document.getElementById('login-card');
+        const profileCard = document.getElementById('profile-card');
+        
+        // Inputs
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        
+        // Profile Elements
+        const displayNameEl = document.getElementById('display-name');
         const emailEl = document.getElementById('user-email');
-        const logoutBtn = document.getElementById('logout-btn');
+        const nameInput = document.getElementById('name-input');
 
-        // Check Auth State
+        // --- AUTH STATE OBSERVER ---
         onAuthStateChanged(auth, (user) => {
+            loadingDiv.style.display = 'none';
+
             if (user) {
-                // 1. User is logged in. Populate data.
-                
-                // Use a default placeholder if Google doesn't provide a photo
-                const photoURL = user.photoURL || 'https://via.placeholder.com/100'; 
-                const displayName = user.displayName || 'User';
-                const email = user.email;
+                // USER IS LOGGED IN
+                loginCard.style.display = 'none';
+                profileCard.style.display = 'block';
 
-                picEl.src = photoURL;
-                nameEl.textContent = displayName;
-                emailEl.textContent = email;
+                emailEl.textContent = user.email;
+                // Use Google photo if available, otherwise placeholder
+                document.getElementById('user-pic').src = user.photoURL || "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" + (user.email);
 
-                // 2. Hide loading, Show card
-                loadingDiv.style.display = 'none';
-                cardDiv.style.display = 'block';
-
+                // Check Realtime Database for Custom Name
+                const userRef = ref(db, 'users/' + user.uid + '/username');
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        displayNameEl.textContent = data;
+                        nameInput.value = data;
+                    } else {
+                        // If no custom name, use email prefix
+                        const defaultName = user.displayName || user.email.split('@')[0];
+                        displayNameEl.textContent = defaultName;
+                        nameInput.value = defaultName;
+                    }
+                });
             } else {
-                // 3. Not logged in? Redirect to login page
-                window.location.href = "index.html";
+                // USER IS LOGGED OUT
+                profileCard.style.display = 'none';
+                loginCard.style.display = 'block';
+                // Clear inputs
+                emailInput.value = '';
+                passInput.value = '';
             }
         });
 
-        // Logout Logic
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = "index.html";
-            }).catch((error) => {
-                console.error("Sign out error", error);
-            });
+        // --- BUTTON HANDLERS ---
+
+        // 1. REGISTER (New User)
+        document.getElementById('register-btn').addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Account created successfully!");
+                    // onAuthStateChanged will handle the redirect
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
         });
+
+        // 2. LOG IN (Existing User)
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Logged in");
+                    // onAuthStateChanged will handle the redirect
+                })
+                .catch((error) => {
+                    alert("Login Failed: " + error.message);
+                });
+        });
+
+        // 3. GOOGLE LOGIN
+        document.getElementById('google-btn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => alert(err.message));
+        });
+
+        // 4. LOGOUT
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+        // 5. SAVE NAME TO DATABASE
+        document.getElementById('save-btn').addEventListener('click', () => {
+            const user = auth.currentUser;
+            const newName = nameInput.value.trim();
+            if (user && newName) {
+                set(ref(db, 'users/' + user.uid + '/username'), newName)
+                    .then(() => alert("Name saved!"))
+                    .catch((err) => alert("Error: " + err.message));
+            }
+        });
+
     </script>
 </body>
 </html>
