@@ -3,29 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Profile - Alinah</title>
+  <title>Sign In - Google</title>
 
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- jwt-decode for client-side token decoding -->
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 
-  <!-- Firebase SDK v10 (modular) - latest as of early 2026 -->
+  <!-- Firebase SDK v9 (modular) -->
   <script type="module">
+    // Firebase imports
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithCredential, 
-      GoogleAuthProvider, 
-      onAuthStateChanged, 
-      updateProfile 
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    
-    import { 
-      getDatabase, 
-      ref, 
-      set, 
-      onValue 
-    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+    import { getAuth, signInWithCredential, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
+    // Your Firebase configuration (this is safe to expose)
     const firebaseConfig = {
       apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
       authDomain: "alina-b5355.firebaseapp.com",
@@ -33,180 +24,239 @@
       storageBucket: "alina-b5355.firebasestorage.app",
       messagingSenderId: "926134449790",
       appId: "1:926134449790:web:759652d3fa38199fab4a2f",
-      measurementId: "G-DFK1VC9PPS",
-      databaseURL: "https://alina-b5355-default-rtdb.firebaseio.com/"
+      measurementId: "G-DFK1VC9PPS"
     };
 
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getDatabase(app);
 
-    window.firebaseApp = { auth, db, GoogleAuthProvider, signInWithCredential, updateProfile, ref, set, onValue, onAuthStateChanged };
+    // Make auth available globally for the callback
+    window.firebaseAuth = auth;
   </script>
 
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)),
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
                   url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
       background-size: cover;
+      background-position: center;
       background-attachment: fixed;
       min-height: 100dvh;
-      color: #111;
       display: grid;
       place-items: center;
-      padding: 20px;
     }
-    .card {
-      background: white;
-      border-radius: 24px;
-      box-shadow: 0 20px 50px -15px rgba(0,0,0,0.35);
-      padding: 2.5rem 2rem;
-      width: 100%;
-      max-width: 460px;
-      text-align: center;
-    }
-    .avatar {
-      width: 110px;
-      height: 110px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 5px solid #0066ff;
-      margin: 1.2rem auto;
-      box-shadow: 0 8px 25px rgba(0,102,255,0.25);
-    }
-    h1 {
-      font-size: 2.1rem;
-      margin-bottom: 0.4rem;
-      color: #111;
-    }
-    .email {
-      color: #555;
-      margin-bottom: 2rem;
-      font-size: 1.05rem;
-    }
-    .name-section {
-      margin: 2rem 0;
-    }
-    .current-name {
-      font-size: 1.7rem;
-      font-weight: 700;
-      margin-bottom: 1rem;
-      min-height: 2.2rem;
-    }
-    .edit-row {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    input[type="text"] {
-      flex: 1;
-      min-width: 220px;
-      padding: 12px 16px;
-      font-size: 1.1rem;
-      border: 2px solid #ddd;
-      border-radius: 12px;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="text"]:focus {
-      border-color: #0066ff;
-    }
-    button {
-      padding: 12px 28px;
-      font-size: 1.05rem;
+    .auth-trigger {
+      padding: 16px 44px;
+      font-size: 1.15rem;
       font-weight: 600;
+      background: #0066ff;
+      color: white;
       border: none;
       border-radius: 12px;
       cursor: pointer;
-      transition: all 0.2s;
+      box-shadow: 0 10px 25px rgba(0, 102, 255, 0.3);
+      transition: all 0.3s ease;
     }
-    .btn-save {
-      background: #00c853;
-      color: white;
+    .auth-trigger:hover {
+      background: #0055dd;
+      transform: translateY(-2px);
+      box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4);
     }
-    .btn-save:hover { background: #00b140; }
-    .btn-signin {
-      background: #4285f4;
-      color: white;
-      padding: 14px 40px;
-      font-size: 1.15rem;
+    .bottom-sheet {
+      position: fixed;
+      inset: auto 0 0 0;
+      background: white;
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -10px 40px rgba(0,0,0,0.28);
+      transform: translateY(100%);
+      transition: transform 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+      max-height: 90dvh;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
     }
-    .btn-signin:hover { background: #3367d6; }
-    .hidden { display: none !important; }
-    .loading { opacity: 0.6; pointer-events: none; }
+    .bottom-sheet.active { transform: translateY(0); display: block; }
+    .sheet-handle {
+      width: 44px;
+      height: 5px;
+      background: #ccc;
+      border-radius: 999px;
+      margin: 18px auto;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      backdrop-filter: blur(10px);
+      display: grid;
+      place-items: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.35s ease;
+      z-index: 900;
+    }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px -10px rgba(0,0,0,0.5);
+      transform: scale(0.92);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      position: relative;
+    }
+    .modal-overlay.active .modal-content { transform: scale(1); }
+    .auth-container {
+      padding: 3rem 2.5rem;
+      text-align: center;
+    }
+    h2 { font-size: 1.9rem; margin-bottom: 0.8rem; color: #111; font-weight: 700; }
+    p.subtitle { color: #555; margin-bottom: 2.5rem; font-size: 1.05rem; }
+    .g_id_signin { margin: 0 auto; }
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: #f1f3f5;
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      color: #666;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .close-btn:hover { background: #e5e7eb; }
+    @media (min-width: 768px) { .bottom-sheet { display: none !important; } }
+    @media (max-width: 767px) { .modal-overlay { display: none !important; } }
   </style>
 </head>
 <body>
 
-<div class="card" id="loginCard">
-  <h1>Hello Alinah!</h1>
-  <p class="email">Sign in to manage your profile</p>
-  
-  <div id="g_id_onload"
-       data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
-       data-callback="handleGoogleSignIn"
-       data-auto_prompt="false">
-  </div>
-  <div class="g_id_signin"
-       data-type="standard"
-       data-size="large"
-       data-theme="outline"
-       data-text="continue_with"
-       data-shape="rectangular"
-       data-logo_alignment="left">
-  </div>
-</div>
+  <button class="auth-trigger" id="openAuth">Sign In with Google</button>
 
-<div class="card hidden" id="profileCard">
-  <img id="avatar" class="avatar" src="https://via.placeholder.com/110?text=?" alt="Profile">
-  
-  <h1 id="greeting">Welcome</h1>
-  <div class="email" id="userEmail"></div>
+  <!-- Mobile Bottom Sheet -->
+  <div class="bottom-sheet" id="bottomSheet">
+    <div class="sheet-handle"></div>
+    <div class="auth-container">
+      <button class="close-btn" id="closeSheet">×</button>
+      <h2>Welcome</h2>
+      <p class="subtitle">Sign in to continue to your dashboard</p>
 
-  <div class="name-section">
-    <div class="current-name" id="displayName">Loading name...</div>
-    
-    <div class="edit-row">
-      <input type="text" id="nameInput" placeholder="Enter your display name" />
-      <button class="btn-save" onclick="saveDisplayName()">Save</button>
+      <div id="g_id_onload"
+           data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="continue_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
     </div>
   </div>
 
-  <button onclick="window.location.reload()">Sign Out</button>
-</div>
+  <!-- Desktop Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="close-btn" id="closeModal">×</button>
+      <div class="auth-container">
+        <h2>Sign In</h2>
+        <p class="subtitle">Use your Google account to continue</p>
 
-<script>
-  const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"; // ← Replace!
+        <div id="g_id_onload"
+             data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="continue_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
+      </div>
+    </div>
+  </div>
 
-  async function handleGoogleSignIn(response) {
-    try {
-      const credential = window.firebaseApp.GoogleAuthProvider.credential(response.credential);
-      const result = await window.firebaseApp.signInWithCredential(window.firebaseApp.auth, credential);
-      showProfile(result.user);
-    } catch (error) {
-      console.error("Sign-in failed:", error);
-      alert("Google sign-in failed. Please try again.");
+  <script>
+    // === IMPORTANT ===
+    // Replace this with your REAL Google OAuth 2.0 Web Client ID
+    const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
+
+    // Called when user completes Google Sign-In
+    function handleCredentialResponse(response) {
+      try {
+        const idToken = response.credential;
+        const payload = jwt_decode(idToken);
+
+        console.log("Google ID Token:", idToken);
+        console.log("User Info:", payload);
+
+        // Option 1: Firebase Authentication (recommended)
+        const credential = GoogleAuthProvider.credential(idToken);
+        window.firebaseAuth.signInWithCredential(credential)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            alert(`Welcome, ${user.displayName || payload.name}!\nYou're now signed in with Firebase!`);
+            // Redirect to your dashboard
+            // window.location.href = "/dashboard.html";
+          })
+          .catch((error) => {
+            console.error("Firebase sign-in failed:", error);
+            alert("Sign-in failed. Please try again.");
+          });
+
+        // Option 2: If you don't want Firebase auth yet - just show info
+        // alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
+
+      } catch (error) {
+        console.error("Error handling credential:", error);
+        alert("Something went wrong during sign-in.");
+      }
     }
-  }
 
-  function showProfile(user) {
-    document.getElementById('loginCard').classList.add('hidden');
-    document.getElementById('profileCard').classList.remove('hidden');
+    // UI Controls
+    const openBtn = document.getElementById('openAuth');
+    const bottomSheet = document.getElementById('bottomSheet');
+    const modal = document.getElementById('modalOverlay');
+    const closeSheet = document.getElementById('closeSheet');
+    const closeModal = document.getElementById('closeModal');
 
-    document.getElementById('avatar').src = user.photoURL || 'https://via.placeholder.com/110?text=' + user.displayName?.[0] || '?';
-    document.getElementById('userEmail').textContent = user.email;
-    document.getElementById('greeting').textContent = `Hi there!`;
+    function openAuth() {
+      if (window.innerWidth < 768) {
+        bottomSheet.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      } else {
+        modal.classList.add('active');
+      }
+    }
 
-    const db = window.firebaseApp.db;
-    const nameRef = window.firebaseApp.ref(db, `users/${user.uid}/displayName`);
+    function closeAuth() {
+      bottomSheet.classList.remove('active');
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
 
-    // Real-time listener
-    window.firebaseApp.onValue(nameRef, (snapshot) => {
-      const savedName = snapshot.val();
-      const nameDisplay = document.getElementById('displayName');
-      const input = document.getElementById('nameInput');
-
-      if (savedName) {
+    openBtn.addEventListener('click', openAuth);
+    closeSheet.addEventListener('click', closeAuth);
+    closeModal.addEventListener('click', closeAuth);
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeAuth(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAuth(); });
+  </script>
+</body>
+</html>
