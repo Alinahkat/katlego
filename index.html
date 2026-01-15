@@ -183,7 +183,7 @@
         alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
 
         // Optional: redirect to a profile page with query params (not secure for production!)
-        // window.location.href = `profile.html?name=${encodeURIComponent(payload.name)}&email=${encodeURIComponent(payload.email)}&picture=${encodeURIComponent(payload.picture)}`;
+         window.location.href = `profile.html?name=${encodeURIComponent(payload.name)}&email=${encodeURIComponent(payload.email)}&picture=${encodeURIComponent(payload.picture)}`;
 
         // For production → send idToken to your backend via fetch/AJAX
       } catch (error) {
