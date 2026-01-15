@@ -4,18 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign In - Google</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  <!-- Google Identity Services -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- jwt-decode library for client-side decoding -->
+  <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
 
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background:
-        linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
-        url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+                  url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
@@ -23,7 +22,6 @@
       display: grid;
       place-items: center;
     }
-
     .auth-trigger {
       padding: 16px 44px;
       font-size: 1.15rem;
@@ -36,14 +34,11 @@
       box-shadow: 0 10px 25px rgba(0, 102, 255, 0.3);
       transition: all 0.3s ease;
     }
-
     .auth-trigger:hover {
       background: #0055dd;
       transform: translateY(-2px);
       box-shadow: 0 15px 35px rgba(0, 102, 255, 0.4);
     }
-
-    /* Bottom Sheet (Mobile) */
     .bottom-sheet {
       position: fixed;
       inset: auto 0 0 0;
@@ -57,12 +52,7 @@
       z-index: 1000;
       display: none;
     }
-
-    .bottom-sheet.active {
-      transform: translateY(0);
-      display: block;
-    }
-
+    .bottom-sheet.active { transform: translateY(0); display: block; }
     .sheet-handle {
       width: 44px;
       height: 5px;
@@ -70,8 +60,6 @@
       border-radius: 999px;
       margin: 18px auto;
     }
-
-    /* Modal (Desktop) */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -84,12 +72,7 @@
       transition: all 0.35s ease;
       z-index: 900;
     }
-
-    .modal-overlay.active {
-      opacity: 1;
-      visibility: visible;
-    }
-
+    .modal-overlay.active { opacity: 1; visibility: visible; }
     .modal-content {
       background: white;
       width: 100%;
@@ -101,61 +84,14 @@
       transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
       position: relative;
     }
-
-    .modal-overlay.active .modal-content {
-      transform: scale(1);
-    }
-
-    /* Common content styles */
+    .modal-overlay.active .modal-content { transform: scale(1); }
     .auth-container {
       padding: 3rem 2.5rem;
       text-align: center;
     }
-
-    h2 {
-      font-size: 1.9rem;
-      margin-bottom: 0.8rem;
-      color: #111;
-      font-weight: 700;
-      letter-spacing: -0.4px;
-    }
-
-    p.subtitle {
-      color: #555;
-      margin-bottom: 2.5rem;
-      font-size: 1.05rem;
-    }
-
-    .google-btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      width: 100%;
-      max-width: 340px;
-      margin: 0 auto;
-      padding: 14px 24px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      font-size: 1.05rem;
-      font-weight: 500;
-      color: #333;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .google-btn:hover {
-      box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-      transform: translateY(-1px);
-    }
-
-    .google-btn img {
-      width: 24px;
-      height: 24px;
-    }
-
+    h2 { font-size: 1.9rem; margin-bottom: 0.8rem; color: #111; font-weight: 700; }
+    p.subtitle { color: #555; margin-bottom: 2.5rem; font-size: 1.05rem; }
+    .g_id_signin { margin: 0 auto; }
     .close-btn {
       position: absolute;
       top: 16px;
@@ -173,19 +109,9 @@
       justify-content: center;
       transition: background 0.2s;
     }
-
-    .close-btn:hover {
-      background: #e5e7eb;
-    }
-
-    /* Responsive */
-    @media (min-width: 768px) {
-      .bottom-sheet { display: none !important; }
-    }
-
-    @media (max-width: 767px) {
-      .modal-overlay { display: none !important; }
-    }
+    .close-btn:hover { background: #e5e7eb; }
+    @media (min-width: 768px) { .bottom-sheet { display: none !important; } }
+    @media (max-width: 767px) { .modal-overlay { display: none !important; } }
   </style>
 </head>
 <body>
@@ -200,10 +126,20 @@
       <h2>Welcome</h2>
       <p class="subtitle">Sign in to continue to your dashboard</p>
 
-      <button class="google-btn" type="button">
-        <img src="https://www.google.com/favicon.ico" alt="Google">
-        Continue with Google
-      </button>
+      <!-- Google Sign In Button - Popup mode -->
+      <div id="g_id_onload"
+           data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+           data-callback="handleCredentialResponse"
+           data-auto_prompt="false">
+      </div>
+      <div class="g_id_signin"
+           data-type="standard"
+           data-size="large"
+           data-theme="outline"
+           data-text="continue_with"
+           data-shape="rectangular"
+           data-logo_alignment="left">
+      </div>
     </div>
   </div>
 
@@ -215,15 +151,46 @@
         <h2>Sign In</h2>
         <p class="subtitle">Use your Google account to continue</p>
 
-        <button class="google-btn" type="button">
-          <img src="https://www.google.com/favicon.ico" alt="Google">
-          Continue with Google
-        </button>
+        <!-- Same Google Sign In Button -->
+        <div id="g_id_onload"
+             data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
+             data-callback="handleCredentialResponse"
+             data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin"
+             data-type="standard"
+             data-size="large"
+             data-theme="outline"
+             data-text="continue_with"
+             data-shape="rectangular"
+             data-logo_alignment="left">
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    // Replace with your real Client ID!
+    const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
+
+    // Callback function when user signs in (popup mode)
+    function handleCredentialResponse(response) {
+      try {
+        const idToken = response.credential;
+        const payload = jwt_decode(idToken);  // Decode JWT
+
+        // You can now redirect or show profile content
+        alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
+
+        // Optional: redirect to a profile page with query params (not secure for production!)
+        // window.location.href = `profile.html?name=${encodeURIComponent(payload.name)}&email=${encodeURIComponent(payload.email)}&picture=${encodeURIComponent(payload.picture)}`;
+
+        // For production → send idToken to your backend via fetch/AJAX
+      } catch (error) {
+        console.error("Error decoding token:", error);
+      }
+    }
+
     const openBtn = document.getElementById('openAuth');
     const bottomSheet = document.getElementById('bottomSheet');
     const modal = document.getElementById('modalOverlay');
@@ -248,14 +215,8 @@
     openBtn.addEventListener('click', openAuth);
     closeSheet.addEventListener('click', closeAuth);
     closeModal.addEventListener('click', closeAuth);
-    
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) closeAuth();
-    });
-
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeAuth();
-    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeAuth(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAuth(); });
   </script>
 </body>
 </html>
