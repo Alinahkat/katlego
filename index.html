@@ -4,10 +4,36 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sign In - Google</title>
+
   <!-- Google Identity Services -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <!-- jwt-decode library for client-side decoding -->
+  <!-- jwt-decode for client-side token decoding -->
   <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
+  <!-- Firebase SDK v9 (modular) -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getAuth, signInWithCredential, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+    // Your Firebase configuration (this is safe to expose)
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
+      authDomain: "alina-b5355.firebaseapp.com",
+      projectId: "alina-b5355",
+      storageBucket: "alina-b5355.firebasestorage.app",
+      messagingSenderId: "926134449790",
+      appId: "1:926134449790:web:759652d3fa38199fab4a2f",
+      measurementId: "G-DFK1VC9PPS"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Make auth available globally for the callback
+    window.firebaseAuth = auth;
+  </script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -126,7 +152,6 @@
       <h2>Welcome</h2>
       <p class="subtitle">Sign in to continue to your dashboard</p>
 
-      <!-- Google Sign In Button - Popup mode -->
       <div id="g_id_onload"
            data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
            data-callback="handleCredentialResponse"
@@ -151,7 +176,6 @@
         <h2>Sign In</h2>
         <p class="subtitle">Use your Google account to continue</p>
 
-        <!-- Same Google Sign In Button -->
         <div id="g_id_onload"
              data-client_id="YOUR_WEB_CLIENT_ID.apps.googleusercontent.com"
              data-callback="handleCredentialResponse"
@@ -170,27 +194,43 @@
   </div>
 
   <script>
-    // Replace with your real Client ID!
+    // === IMPORTANT ===
+    // Replace this with your REAL Google OAuth 2.0 Web Client ID
     const CLIENT_ID = "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com";
 
-    // Callback function when user signs in (popup mode)
+    // Called when user completes Google Sign-In
     function handleCredentialResponse(response) {
       try {
         const idToken = response.credential;
-        const payload = jwt_decode(idToken);  // Decode JWT
+        const payload = jwt_decode(idToken);
 
-        // You can now redirect or show profile content
-        alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
+        console.log("Google ID Token:", idToken);
+        console.log("User Info:", payload);
 
-        // Optional: redirect to a profile page with query params (not secure for production!)
-         window.location.href = `profile.html?name=${encodeURIComponent(payload.name)}&email=${encodeURIComponent(payload.email)}&picture=${encodeURIComponent(payload.picture)}`;
+        // Option 1: Firebase Authentication (recommended)
+        const credential = GoogleAuthProvider.credential(idToken);
+        window.firebaseAuth.signInWithCredential(credential)
+          .then((userCredential) => {
+            const user = userCredential.user;
+            alert(`Welcome, ${user.displayName || payload.name}!\nYou're now signed in with Firebase!`);
+            // Redirect to your dashboard
+            // window.location.href = "/dashboard.html";
+          })
+          .catch((error) => {
+            console.error("Firebase sign-in failed:", error);
+            alert("Sign-in failed. Please try again.");
+          });
 
-        // For production → send idToken to your backend via fetch/AJAX
+        // Option 2: If you don't want Firebase auth yet - just show info
+        // alert(`Welcome, ${payload.name}!\nEmail: ${payload.email}`);
+
       } catch (error) {
-        console.error("Error decoding token:", error);
+        console.error("Error handling credential:", error);
+        alert("Something went wrong during sign-in.");
       }
     }
 
+    // UI Controls
     const openBtn = document.getElementById('openAuth');
     const bottomSheet = document.getElementById('bottomSheet');
     const modal = document.getElementById('modalOverlay');
