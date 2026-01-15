@@ -1,66 +1,165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Your Profile</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <style>
-    body {
-      font-family: system-ui, sans-serif;
-      background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)),
-                  url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=2000');
-      background-size: cover;
-      background-attachment: fixed;
-      color: white;
-      min-height: 100dvh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .profile-card {
-      background: rgba(255,255,255,0.95);
-      color: #111;
-      padding: 3rem;
-      border-radius: 16px;
-      max-width: 420px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
-    }
-    img { border-radius: 50%; width: 120px; height: 120px; object-fit: cover; margin-bottom: 1.5rem; }
-    h1 { margin-bottom: 0.5rem; }
-    p { margin: 0.5rem 0; font-size: 1.1rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile</title>
+    <style>
+        /* --- Page Layout --- */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* --- Profile Card --- */
+        .profile-card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            display: none; /* Hidden until data is loaded */
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Profile Image --- */
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #e1e4e8;
+            margin-bottom: 20px;
+        }
+
+        /* --- Typography --- */
+        h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin: 0 0 10px 0;
+        }
+
+        .email {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 15px;
+        }
+
+        /* --- Logout Button --- */
+        .logout-btn {
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background-color: #ff6b81;
+            transform: translateY(-1px);
+        }
+
+        .logout-btn:active {
+            transform: translateY(1px);
+        }
+
+        /* --- Loading State --- */
+        #loading {
+            color: #666;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body>
 
-  <div class="profile-card">
-    <img id="profilePic" src="" alt="Profile" />
-    <h1 id="name">Welcome!</h1>
-    <p id="email"></p>
-    <p><small>Signed in with Google</small></p>
-  </div>
+    <div id="loading">Loading Profile...</div>
 
-  <script>
-    // This runs when redirected back from Google
-    window.onload = function() {
-      google.accounts.id.initialize({
-        client_id: "YOUR_WEB_CLIENT_ID.apps.googleusercontent.com",
-        callback: handleCredentialResponse
-      });
+    <div class="profile-card" id="profile-card">
+        <img id="user-pic" src="" alt="Profile Picture" class="profile-pic">
+        <h1 id="user-name">User Name</h1>
+        <div class="email" id="user-email">email@example.com</div>
+        <button class="logout-btn" id="logout-btn">Log Out</button>
+    </div>
 
-      // Try to get credential from redirect (GSI handles it automatically in redirect mode)
-      google.accounts.id.prompt(); // optional — shows One Tap if needed
-    };
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    function handleCredentialResponse(response) {
-      // response.credential is the JWT ID token
-      const data = JSON.parse(atob(response.credential.split('.')[1])); // decode payload
+        // Your Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
+            authDomain: "alina-b5355.firebaseapp.com",
+            projectId: "alina-b5355",
+            storageBucket: "alina-b5355.firebasestorage.app",
+            messagingSenderId: "926134449790",
+            appId: "1:926134449790:web:759652d3fa38199fab4a2f",
+            measurementId: "G-DFK1VC9PPS"
+        };
 
-      document.getElementById('name').textContent = data.name || "User";
-      document.getElementById('email').textContent = data.email || "No email";
-      document.getElementById('profilePic').src = data.picture || "https://via.placeholder.com/120";
-    }
-  </script>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // UI Elements
+        const loadingDiv = document.getElementById('loading');
+        const cardDiv = document.getElementById('profile-card');
+        const picEl = document.getElementById('user-pic');
+        const nameEl = document.getElementById('user-name');
+        const emailEl = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        // Check Auth State
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // 1. User is logged in. Populate data.
+                
+                // Use a default placeholder if Google doesn't provide a photo
+                const photoURL = user.photoURL || 'https://via.placeholder.com/100'; 
+                const displayName = user.displayName || 'User';
+                const email = user.email;
+
+                picEl.src = photoURL;
+                nameEl.textContent = displayName;
+                emailEl.textContent = email;
+
+                // 2. Hide loading, Show card
+                loadingDiv.style.display = 'none';
+                cardDiv.style.display = 'block';
+
+            } else {
+                // 3. Not logged in? Redirect to login page
+                window.location.href = "index.html";
+            }
+        });
+
+        // Logout Logic
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => {
+                console.error("Sign out error", error);
+            });
+        });
+    </script>
 </body>
 </html>
