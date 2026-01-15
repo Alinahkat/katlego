@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile with Realtime DB</title>
+    <title>Email & Password Login</title>
     <style>
         /* --- Styles --- */
         body {
@@ -37,94 +37,126 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Profile Elements */
+        /* Inputs */
+        .auth-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box; /* Ensures padding doesn't break width */
+            font-size: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-primary:hover { background-color: #0056b3; }
+
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-secondary:hover { background-color: #545b62; }
+
+        .btn-google { background-color: #fff; border: 1px solid #ddd; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;}
+        .btn-google:hover { background-color: #f8f9fa; }
+
+        .btn-danger { background-color: #dc3545; color: white; margin-top: 20px;}
+
+        /* Profile Styles */
         .profile-pic {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             margin-bottom: 15px;
             border: 3px solid #007bff;
+            background-color: #eee; /* Placeholder color */
         }
 
-        h2 { margin: 0 0 5px 0; color: #333; }
-        p { margin: 0 0 20px 0; color: #666; font-size: 0.9rem; }
-
-        /* Input Group */
-        .input-group {
-            margin-top: 20px;
-            display: flex;
-            gap: 8px;
+        .divider {
+            margin: 20px 0;
+            border-top: 1px solid #eee;
+            position: relative;
+        }
+        .divider span {
+            background: white;
+            padding: 0 10px;
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #777;
+            font-size: 0.8rem;
         }
 
-        input {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 1rem;
-        }
-
-        button.save-btn {
-            padding: 10px 20px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        button.save-btn:hover { background-color: #218838; }
-
-        /* Auth Buttons */
-        .auth-btn {
-            width: 100%;
-            padding: 12px;
-            margin-top: 10px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 1rem;
-        }
-
-        .google-btn { background-color: #4285F4; color: white; }
-        .logout-btn { background-color: #dc3545; color: white; margin-top: 25px; }
-
-        #loading { font-size: 1.2rem; color: #555; }
+        /* Profile Input Group */
+        .input-group { display: flex; gap: 8px; margin-top: 20px; }
+        .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <div id="loading">Initialize App...</div>
+        <div id="loading">Initializing App...</div>
 
         <div id="login-card" class="card">
-            <h2>Welcome</h2>
-            <p>Sign in to manage your profile</p>
-            <button id="login-btn" class="auth-btn google-btn">Sign in with Google</button>
+            <h2>Welcome Back</h2>
+            <p style="color:#666; margin-bottom:20px;">Enter your details to access your account</p>
+
+            <input type="email" id="email" class="auth-input" placeholder="Email Address">
+            <input type="password" id="password" class="auth-input" placeholder="Password">
+
+            <button id="login-btn" class="btn btn-primary">Log In</button>
+            <button id="register-btn" class="btn btn-secondary">Register New Account</button>
+
+            <div class="divider"><span>OR</span></div>
+
+            <button id="google-btn" class="btn btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G">
+                Sign in with Google
+            </button>
         </div>
 
         <div id="profile-card" class="card">
-            <img id="user-pic" src="" alt="Profile" class="profile-pic">
+            <img id="user-pic" src="https://via.placeholder.com/100" alt="Profile" class="profile-pic">
             
-            <h2 id="display-name">Loading Name...</h2>
+            <h2 id="display-name">Loading...</h2>
             <p id="user-email">email@example.com</p>
 
             <div class="input-group">
-                <input type="text" id="name-input" placeholder="Enter new name">
-                <button id="save-btn" class="save-btn">Save</button>
+                <input type="text" id="name-input" placeholder="Set custom display name">
+                <button id="save-btn" class="btn btn-primary" style="width: auto; margin:0;">Save</button>
             </div>
 
-            <button id="logout-btn" class="auth-btn logout-btn">Log Out</button>
+            <button id="logout-btn" class="btn btn-danger">Log Out</button>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // Added createUserWithEmailAndPassword and signInWithEmailAndPassword
+        import { 
+            getAuth, 
+            GoogleAuthProvider, 
+            signInWithPopup, 
+            signOut, 
+            onAuthStateChanged,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // --- CONFIGURATION ---
+        // Your Config
         const firebaseConfig = {
             apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
             authDomain: "alina-b5355.firebaseapp.com",
@@ -133,11 +165,9 @@
             messagingSenderId: "926134449790",
             appId: "1:926134449790:web:759652d3fa38199fab4a2f",
             measurementId: "G-DFK1VC9PPS",
-            // IMPORTANT: This URL must be correct. I added the default usually associated with your project ID.
             databaseURL: "https://alina-b5355-default-rtdb.firebaseio.com/"
         };
 
-        // Initialize
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -147,75 +177,103 @@
         const loadingDiv = document.getElementById('loading');
         const loginCard = document.getElementById('login-card');
         const profileCard = document.getElementById('profile-card');
+        
+        // Inputs
+        const emailInput = document.getElementById('email');
+        const passInput = document.getElementById('password');
+        
+        // Profile Elements
         const displayNameEl = document.getElementById('display-name');
         const emailEl = document.getElementById('user-email');
-        const picEl = document.getElementById('user-pic');
         const nameInput = document.getElementById('name-input');
 
-        // --- AUTH STATE LISTENER ---
+        // --- AUTH STATE OBSERVER ---
         onAuthStateChanged(auth, (user) => {
-            loadingDiv.style.display = 'none'; // Hide loading text
+            loadingDiv.style.display = 'none';
 
             if (user) {
-                // User is Logged In
+                // USER IS LOGGED IN
                 loginCard.style.display = 'none';
                 profileCard.style.display = 'block';
 
-                // 1. Set basic info from Google Auth
                 emailEl.textContent = user.email;
-                picEl.src = user.photoURL || 'https://via.placeholder.com/100';
+                // Use Google photo if available, otherwise placeholder
+                document.getElementById('user-pic').src = user.photoURL || "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" + (user.email);
 
-                // 2. LISTEN TO REALTIME DATABASE for the custom name
-                // Path: users/[USER_ID]/username
+                // Check Realtime Database for Custom Name
                 const userRef = ref(db, 'users/' + user.uid + '/username');
-
                 onValue(userRef, (snapshot) => {
                     const data = snapshot.val();
                     if (data) {
-                        // If name exists in DB, use it
                         displayNameEl.textContent = data;
                         nameInput.value = data;
                     } else {
-                        // If no name in DB yet, use Google name
-                        displayNameEl.textContent = user.displayName;
-                        nameInput.value = user.displayName;
+                        // If no custom name, use email prefix
+                        const defaultName = user.displayName || user.email.split('@')[0];
+                        displayNameEl.textContent = defaultName;
+                        nameInput.value = defaultName;
                     }
                 });
-
             } else {
-                // User is Logged Out
+                // USER IS LOGGED OUT
                 profileCard.style.display = 'none';
                 loginCard.style.display = 'block';
+                // Clear inputs
+                emailInput.value = '';
+                passInput.value = '';
             }
         });
 
-        // --- BUTTON ACTIONS ---
+        // --- BUTTON HANDLERS ---
 
-        // 1. Login
-        document.getElementById('login-btn').addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch((error) => alert(error.message));
+        // 1. REGISTER (New User)
+        document.getElementById('register-btn').addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Account created successfully!");
+                    // onAuthStateChanged will handle the redirect
+                })
+                .catch((error) => {
+                    alert("Error: " + error.message);
+                });
         });
 
-        // 2. Logout
+        // 2. LOG IN (Existing User)
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passInput.value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Logged in");
+                    // onAuthStateChanged will handle the redirect
+                })
+                .catch((error) => {
+                    alert("Login Failed: " + error.message);
+                });
+        });
+
+        // 3. GOOGLE LOGIN
+        document.getElementById('google-btn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => alert(err.message));
+        });
+
+        // 4. LOGOUT
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth);
         });
 
-        // 3. Save Name to Database
+        // 5. SAVE NAME TO DATABASE
         document.getElementById('save-btn').addEventListener('click', () => {
             const user = auth.currentUser;
             const newName = nameInput.value.trim();
-
             if (user && newName) {
-                // Write to: users/[USER_ID]/username
                 set(ref(db, 'users/' + user.uid + '/username'), newName)
-                    .then(() => {
-                        alert("Name updated successfully!");
-                    })
-                    .catch((error) => {
-                        console.error("Error writing to DB", error);
-                        alert("Failed to save: " + error.message);
-                    });
+                    .then(() => alert("Name saved!"))
+                    .catch((err) => alert("Error: " + err.message));
             }
         });
 
