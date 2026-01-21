@@ -1,282 +1,389 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email & Password Login</title>
-    <style>
-        /* --- Styles --- */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        /* Card Styling */
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: none; /* Hidden by default */
-            animation: fadeIn 0.4s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Inputs */
-        .auth-input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box; /* Ensures padding doesn't break width */
-            font-size: 1rem;
-        }
-
-        /* Buttons */
-        .btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            transition: 0.2s;
-        }
-
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-primary:hover { background-color: #0056b3; }
-
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-secondary:hover { background-color: #545b62; }
-
-        .btn-google { background-color: #fff; border: 1px solid #ddd; color: #333; display: flex; align-items: center; justify-content: center; gap: 10px;}
-        .btn-google:hover { background-color: #f8f9fa; }
-
-        .btn-danger { background-color: #dc3545; color: white; margin-top: 20px;}
-
-        /* Profile Styles */
-        .profile-pic {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-            border: 3px solid #007bff;
-            background-color: #eee; /* Placeholder color */
-        }
-
-        .divider {
-            margin: 20px 0;
-            border-top: 1px solid #eee;
-            position: relative;
-        }
-        .divider span {
-            background: white;
-            padding: 0 10px;
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #777;
-            font-size: 0.8rem;
-        }
-
-        /* Profile Input Group */
-        .input-group { display: flex; gap: 8px; margin-top: 20px; }
-        .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 6px; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS Admin - Learners & Courses</title>
+  <style>
+    :root {
+      --primary: #1e40af; --primary-dark: #1e3a8a;
+      --success: #10b981; --warning: #f59e0b; --danger: #ef4444;
+      --gray: #6b7280; --light: #f3f4f6; --bg: #f8fafc;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin:0; color:#1f2937; min-height:100vh; }
+    .layout { display: grid; grid-template-columns: 240px 1fr; height:100vh; }
+    aside { background:white; border-right:1px solid #e5e7eb; padding:1.5rem 0; overflow-y:auto; }
+    .logo { padding:0 1.5rem 1.5rem; font-size:1.5rem; font-weight:bold; color:var(--primary-dark); border-bottom:1px solid #e5e7eb; }
+    nav ul { list-style:none; padding:1rem 0 0; margin:0; }
+    nav a { display:block; padding:0.75rem 1.5rem; color:#4b5563; text-decoration:none; font-weight:500; }
+    nav a.active, nav a:hover { background:var(--light); color:var(--primary); }
+    header { background:var(--primary); color:white; padding:1.25rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+    main { padding:2rem; overflow-y:auto; }
+    .card { background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.06); padding:1.75rem; margin-bottom:2rem; }
+    h2 { margin:0 0 1.25rem; color:#111827; }
+    button { background:var(--primary); color:white; border:none; padding:0.75rem 1.4rem; border-radius:6px; cursor:pointer; font-weight:500; }
+    button:hover { background:var(--primary-dark); }
+    button.danger { background:var(--danger); } button.danger:hover { background:#dc2626; }
+    button.secondary { background:#6b7280; } button.secondary:hover { background:#4b5563; }
+    input, select, textarea { padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:6px; font-size:1rem; }
+    table { width:100%; border-collapse:collapse; font-size:0.95rem; }
+    th, td { padding:1rem; text-align:left; border-bottom:1px solid #e5e7eb; }
+    th { background:var(--light); font-weight:600; color:#374151; }
+    .status-badge { padding:0.35rem 0.75rem; border-radius:999px; font-size:0.8rem; font-weight:500; }
+    .status-pending { background:#fef3c7; color:#92400e; }
+    .status-registered { background:#d1fae5; color:#065f46; }
+    .status-active { background:#dbeafe; color:#1e40af; }
+    .status-inactive { background:#fee2e2; color:#991b1b; }
+    #message, #authMessage { margin-top:1rem; padding:1rem; border-radius:6px; }
+    .success { background:#d1fae5; color:#065f46; }
+    .error { background:#fee2e2; color:#991b1b; }
+    .courses-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem; }
+    .course-card { border:1px solid #e5e7eb; border-radius:8px; padding:1.25rem; background:#fff; }
+    .assign-form { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
+    @media (max-width:1024px) { .layout { grid-template-columns:1fr; } aside { display:none; } }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="loading">Initializing App...</div>
+<div class="layout">
+  <aside>
+    <div class="logo">LMS Admin</div>
+    <nav>
+      <ul>
+        <li><a href="#" class="active">Learners</a></li>
+        <li><a href="#courses-section">Courses</a></li>
+        <li><a href="#">Assignments</a></li>
+        <li><a href="#">Reports</a></li>
+      </ul>
+    </nav>
+  </aside>
 
-        <div id="login-card" class="card">
-            <h2>Welcome Back</h2>
-            <p style="color:#666; margin-bottom:20px;">Enter your details to access your account</p>
+  <div style="display:flex; flex-direction:column; height:100vh;">
+    <header>
+      <h1 style="margin:0; font-size:1.4rem;">Manage Learners & Courses</h1>
+      <button id="signOutBtn">Sign Out</button>
+    </header>
 
-            <input type="email" id="email" class="auth-input" placeholder="Email Address">
-            <input type="password" id="password" class="auth-input" placeholder="Password">
+    <main>
+      <div id="auth-section" class="card" style="max-width:500px; margin:4rem auto; display:none;">
+        <h2>Admin Login</h2>
+        <button id="googleSignInBtn">Sign in with Google</button>
+        <div id="authMessage"></div>
+      </div>
 
-            <button id="login-btn" class="btn btn-primary">Log In</button>
-            <button id="register-btn" class="btn btn-secondary">Register New Account</button>
+      <div id="dashboard" style="display:none;">
 
-            <div class="divider"><span>OR</span></div>
-
-            <button id="google-btn" class="btn btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="G">
-                Sign in with Google
-            </button>
+        <!-- Invite Learner (existing) -->
+        <div class="card">
+          <h2>Invite New Learner</h2>
+          <form id="inviteForm" style="display:flex; gap:1rem; flex-wrap:wrap;">
+            <input type="email" id="learnerEmail" placeholder="Learner's email" required style="flex:1;" />
+            <button type="submit">Send Invite</button>
+          </form>
+          <div id="message"></div>
         </div>
 
-        <div id="profile-card" class="card">
-            <img id="user-pic" src="https://via.placeholder.com/100" alt="Profile" class="profile-pic">
-            
-            <h2 id="display-name">Loading...</h2>
-            <p id="user-email">email@example.com</p>
+        <!-- Courses Section -->
+        <div class="card" id="courses-section">
+          <h2>Courses</h2>
+          <form id="addCourseForm" style="margin-bottom:2rem;">
+            <input type="text" id="courseTitle" placeholder="Course title" required style="width:100%; margin-bottom:0.75rem;" />
+            <textarea id="courseDesc" placeholder="Short description" rows="2" style="width:100%; margin-bottom:0.75rem;"></textarea>
+            <button type="submit">Create Course</button>
+          </form>
 
-            <div class="input-group">
-                <input type="text" id="name-input" placeholder="Set custom display name">
-                <button id="save-btn" class="btn btn-primary" style="width: auto; margin:0;">Save</button>
+          <div class="courses-grid" id="coursesList"></div>
+        </div>
+
+        <!-- Learners Table with Assignment -->
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
+            <h2>Learners & Course Assignments</h2>
+            <div>
+              <select id="courseSelectForAssign" style="margin-right:0.75rem; min-width:220px;">
+                <option value="">Select course to assign...</option>
+              </select>
+              <button id="bulkAssignBtn" class="secondary" disabled>Bulk Assign Selected</button>
             </div>
+          </div>
 
-            <button id="logout-btn" class="btn btn-danger">Log Out</button>
+          <table id="learnersTable">
+            <thead>
+              <tr>
+                <th><input type="checkbox" id="selectAll" /></th>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Assigned Courses</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
-    </div>
+      </div>
+    </main>
+  </div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Added createUserWithEmailAndPassword and signInWithEmailAndPassword
-        import { 
-            getAuth, 
-            GoogleAuthProvider, 
-            signInWithPopup, 
-            signOut, 
-            onAuthStateChanged,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+<script type="module">
+  // Your existing firebaseConfig
+  const firebaseConfig = {
+    apiKey: "AIzaSyDLvkRwSpd-hbPaDP31pV1H-4N5_Re-_xc",
+    authDomain: "learnermanagementsystem-f3b6a.firebaseapp.com",
+    databaseURL: "https://learnermanagementsystem-f3b6a-default-rtdb.firebaseio.com",
+    projectId: "learnermanagementsystem-f3b6a",
+    storageBucket: "learnermanagementsystem-f3b6a.firebasestorage.app",
+    messagingSenderId: "173549259244",
+    appId: "1:173549259244:web:f8722018a989c484a7d8c9",
+    measurementId: "G-K1VW244B7P"
+  };
 
-        // Your Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyAZukFaY1X-MKZziof45k43uKelGBRTlhk",
-            authDomain: "alina-b5355.firebaseapp.com",
-            projectId: "alina-b5355",
-            storageBucket: "alina-b5355.firebasestorage.app",
-            messagingSenderId: "926134449790",
-            appId: "1:926134449790:web:759652d3fa38199fab4a2f",
-            measurementId: "G-DFK1VC9PPS",
-            databaseURL: "https://alina-b5355-default-rtdb.firebaseio.com/"
-        };
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import { getDatabase, ref, push, set, serverTimestamp, onValue, query, orderByChild, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
-        const provider = new GoogleAuthProvider();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-        // UI References
-        const loadingDiv = document.getElementById('loading');
-        const loginCard = document.getElementById('login-card');
-        const profileCard = document.getElementById('profile-card');
-        
-        // Inputs
-        const emailInput = document.getElementById('email');
-        const passInput = document.getElementById('password');
-        
-        // Profile Elements
-        const displayNameEl = document.getElementById('display-name');
-        const emailEl = document.getElementById('user-email');
-        const nameInput = document.getElementById('name-input');
+  const authSection = document.getElementById('auth-section');
+  const dashboard = document.getElementById('dashboard');
+  const messageDiv = document.getElementById('message');
 
-        // --- AUTH STATE OBSERVER ---
-        onAuthStateChanged(auth, (user) => {
-            loadingDiv.style.display = 'none';
+  let currentUser = null;
+  let selectedLearners = new Set();   // for bulk assign
+  let coursesMap = {};                // courseKey → {title, ...}
 
-            if (user) {
-                // USER IS LOGGED IN
-                loginCard.style.display = 'none';
-                profileCard.style.display = 'block';
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+      authSection.style.display = 'none';
+      dashboard.style.display = 'block';
+      loadCourses();
+      loadLearnersList();
+    } else {
+      authSection.style.display = 'block';
+      dashboard.style.display = 'none';
+    }
+  });
 
-                emailEl.textContent = user.email;
-                // Use Google photo if available, otherwise placeholder
-                document.getElementById('user-pic').src = user.photoURL || "https://ui-avatars.com/api/?background=0D8ABC&color=fff&name=" + (user.email);
+  document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
+    const provider = new GoogleAuthProvider();
+    try { await signInWithPopup(auth, provider); } 
+    catch (error) { document.getElementById('authMessage').innerHTML = `<div class="error">${error.message}</div>`; }
+  });
 
-                // Check Realtime Database for Custom Name
-                const userRef = ref(db, 'users/' + user.uid + '/username');
-                onValue(userRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        displayNameEl.textContent = data;
-                        nameInput.value = data;
-                    } else {
-                        // If no custom name, use email prefix
-                        const defaultName = user.displayName || user.email.split('@')[0];
-                        displayNameEl.textContent = defaultName;
-                        nameInput.value = defaultName;
-                    }
-                });
-            } else {
-                // USER IS LOGGED OUT
-                profileCard.style.display = 'none';
-                loginCard.style.display = 'block';
-                // Clear inputs
-                emailInput.value = '';
-                passInput.value = '';
-            }
-        });
+  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
 
-        // --- BUTTON HANDLERS ---
+  // ─── Courses ─────────────────────────────────────
+  async function loadCourses() {
+    const coursesRef = ref(db, 'courses');
+    onValue(coursesRef, (snap) => {
+      const listEl = document.getElementById('coursesList');
+      const selectEl = document.getElementById('courseSelectForAssign');
+      listEl.innerHTML = '';
+      selectEl.innerHTML = '<option value="">Select course to assign...</option>';
 
-        // 1. REGISTER (New User)
-        document.getElementById('register-btn').addEventListener('click', () => {
-            const email = emailInput.value;
-            const password = passInput.value;
+      if (!snap.exists()) {
+        listEl.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem;">No courses yet</p>';
+        return;
+      }
 
-            createUserWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    alert("Account created successfully!");
-                    // onAuthStateChanged will handle the redirect
-                })
-                .catch((error) => {
-                    alert("Error: " + error.message);
-                });
-        });
+      coursesMap = {};
+      const courses = [];
+      snap.forEach(child => {
+        const data = child.val();
+        data.key = child.key;
+        coursesMap[child.key] = data;
+        courses.push(data);
+      });
 
-        // 2. LOG IN (Existing User)
-        document.getElementById('login-btn').addEventListener('click', () => {
-            const email = emailInput.value;
-            const password = passInput.value;
+      courses.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
 
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    console.log("Logged in");
-                    // onAuthStateChanged will handle the redirect
-                })
-                .catch((error) => {
-                    alert("Login Failed: " + error.message);
-                });
-        });
+      courses.forEach(c => {
+        // Course card
+        const card = document.createElement('div');
+        card.className = 'course-card';
+        card.innerHTML = `
+          <h3>${c.title}</h3>
+          <p style="color:var(--gray);">${c.description || 'No description'}</p>
+          <small>Created: ${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</small>
+        `;
+        listEl.appendChild(card);
 
-        // 3. GOOGLE LOGIN
-        document.getElementById('google-btn').addEventListener('click', () => {
-            signInWithPopup(auth, provider).catch(err => alert(err.message));
-        });
+        // Select option
+        const opt = document.createElement('option');
+        opt.value = c.key;
+        opt.textContent = c.title;
+        selectEl.appendChild(opt);
+      });
 
-        // 4. LOGOUT
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            signOut(auth);
-        });
+      document.getElementById('courseSelectForAssign').disabled = false;
+    });
+  }
 
-        // 5. SAVE NAME TO DATABASE
-        document.getElementById('save-btn').addEventListener('click', () => {
-            const user = auth.currentUser;
-            const newName = nameInput.value.trim();
-            if (user && newName) {
-                set(ref(db, 'users/' + user.uid + '/username'), newName)
-                    .then(() => alert("Name saved!"))
-                    .catch((err) => alert("Error: " + err.message));
-            }
-        });
+  document.getElementById('addCourseForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('courseTitle').value.trim();
+    const desc  = document.getElementById('courseDesc').value.trim();
 
-    </script>
+    if (!title) return;
+
+    try {
+      const newRef = push(ref(db, 'courses'));
+      await set(newRef, {
+        title,
+        description: desc,
+        createdAt: serverTimestamp(),
+        createdBy: currentUser?.uid || 'admin',
+        status: 'active'
+      });
+      e.target.reset();
+      messageDiv.textContent = `Course "${title}" created!`;
+      messageDiv.className = 'success';
+    } catch (err) {
+      messageDiv.textContent = `Error: ${err.message}`;
+      messageDiv.className = 'error';
+    }
+  });
+
+  // ─── Learners with Assignments ───────────────────
+  function loadLearnersList() {
+    const learnersRef = ref(db, 'learners');
+    onValue(query(learnersRef, orderByChild('invitedAt')), (snap) => {
+      const tbody = document.querySelector('#learnersTable tbody');
+      tbody.innerHTML = '';
+
+      if (!snap.exists()) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;">No learners yet</td></tr>';
+        return;
+      }
+
+      const learners = [];
+      snap.forEach(child => {
+        const d = child.val();
+        d.key = child.key;
+        learners.push(d);
+      });
+
+      learners.sort((a,b) => (b.invitedAt||0) - (a.invitedAt||0));
+
+      learners.forEach(data => {
+        const row = document.createElement('tr');
+        const statusClass = `status-${(data.status||'pending').toLowerCase()}`;
+        const courseCount = data.assignedCourseCount || 0;
+
+        row.innerHTML = `
+          <td><input type="checkbox" class="row-select" data-key="${data.key}" /></td>
+          <td>${data.email}</td>
+          <td>${data.name || '—'}</td>
+          <td><span class="status-badge ${statusClass}">${data.status || 'Pending'}</span></td>
+          <td>${courseCount} course${courseCount !== 1 ? 's' : ''}</td>
+          <td>
+            <button onclick="showAssignModal('${data.key}', '${data.email}')">Assign Course</button>
+            <button class="secondary" onclick="viewAssignments('${data.key}')">View</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    });
+  }
+
+  // Checkbox selection for bulk
+  document.getElementById('selectAll')?.addEventListener('change', (e) => {
+    document.querySelectorAll('.row-select').forEach(cb => cb.checked = e.target.checked);
+    updateBulkButton();
+  });
+
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('row-select')) {
+      updateBulkButton();
+    }
+  });
+
+  function updateBulkButton() {
+    selectedLearners.clear();
+    document.querySelectorAll('.row-select:checked').forEach(cb => {
+      selectedLearners.add(cb.dataset.key);
+    });
+    const btn = document.getElementById('bulkAssignBtn');
+    const courseId = document.getElementById('courseSelectForAssign').value;
+    btn.disabled = selectedLearners.size === 0 || !courseId;
+  }
+
+  document.getElementById('courseSelectForAssign')?.addEventListener('change', updateBulkButton);
+
+  document.getElementById('bulkAssignBtn')?.addEventListener('click', async () => {
+    const courseId = document.getElementById('courseSelectForAssign').value;
+    if (!courseId || selectedLearners.size === 0) return;
+
+    if (!confirm(`Assign "${coursesMap[courseId]?.title}" to ${selectedLearners.size} learner(s)?`)) return;
+
+    const updates = {};
+    const now = serverTimestamp();
+
+    for (const learnerId of selectedLearners) {
+      const assignRef = push(ref(db, 'courseAssignments'));
+      updates[`courseAssignments/${assignRef.key}`] = {
+        courseId,
+        learnerId,
+        assignedAt: now,
+        assignedBy: currentUser?.uid,
+        status: 'assigned'
+      };
+      // Optional: increment count (transaction better in production)
+      updates[`learners/${learnerId}/assignedCourseCount`] = (await get(ref(db, `learners/${learnerId}/assignedCourseCount`))).val() + 1 || 1;
+    }
+
+    try {
+      await update(ref(db), updates);
+      messageDiv.textContent = `Assigned to ${selectedLearners.size} learner(s)`;
+      messageDiv.className = 'success';
+      selectedLearners.clear();
+      document.getElementById('selectAll').checked = false;
+      updateBulkButton();
+    } catch (err) {
+      messageDiv.textContent = `Error: ${err.message}`;
+      messageDiv.className = 'error';
+    }
+  });
+
+  // Single learner assign (placeholder - can open modal in future)
+  window.showAssignModal = (learnerKey, email) => {
+    const courseId = prompt(`Enter course key to assign to ${email} (or use dropdown in bulk)`);
+    if (!courseId) return;
+    // Similar logic as bulk but for one
+    alert(`Would assign course ${courseId} to ${learnerKey} — implement fully if needed`);
+  };
+
+  window.viewAssignments = (learnerKey) => {
+    alert(`View assignments for learner ${learnerKey} — open modal/table in future`);
+    // Future: query courseAssignments where learnerId == learnerKey, join with courses
+  };
+
+  // Existing invite logic (adapted path to 'learners')
+  document.getElementById('inviteForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('learnerEmail').value.trim().toLowerCase();
+    if (!email) return;
+
+    try {
+      const newRef = push(ref(db, 'learners'));
+      await set(newRef, {
+        email,
+        invitedAt: serverTimestamp(),
+        status: 'Pending'
+      });
+      messageDiv.textContent = `Invited ${email}`;
+      messageDiv.className = 'success';
+      e.target.reset();
+    } catch (err) {
+      messageDiv.textContent = `Error: ${err.message}`;
+      messageDiv.className = 'error';
+    }
+  });
+</script>
 </body>
 </html>
