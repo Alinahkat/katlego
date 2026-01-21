@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LMS Admin - Learners & Courses</title>
+  <title>LMS Admin - Full System</title>
   <style>
     :root {
       --primary: #1e40af; --primary-dark: #1e3a8a;
@@ -11,37 +11,42 @@
       --gray: #6b7280; --light: #f3f4f6; --bg: #f8fafc;
     }
     * { box-sizing: border-box; }
-    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin:0; color:#1f2937; min-height:100vh; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); margin:0; color:#1f2937; height: 100vh; overflow: hidden; }
+    
+    /* Layout */
     .layout { display: grid; grid-template-columns: 240px 1fr; height:100vh; }
-    aside { background:white; border-right:1px solid #e5e7eb; padding:1.5rem 0; overflow-y:auto; }
+    aside { background:white; border-right:1px solid #e5e7eb; padding:1.5rem 0; }
     .logo { padding:0 1.5rem 1.5rem; font-size:1.5rem; font-weight:bold; color:var(--primary-dark); border-bottom:1px solid #e5e7eb; }
-    nav ul { list-style:none; padding:1rem 0 0; margin:0; }
-    nav a { display:block; padding:0.75rem 1.5rem; color:#4b5563; text-decoration:none; font-weight:500; }
-    nav a.active, nav a:hover { background:var(--light); color:var(--primary); }
-    header { background:var(--primary); color:white; padding:1.25rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-    main { padding:2rem; overflow-y:auto; }
-    .card { background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.06); padding:1.75rem; margin-bottom:2rem; }
-    h2 { margin:0 0 1.25rem; color:#111827; }
-    button { background:var(--primary); color:white; border:none; padding:0.75rem 1.4rem; border-radius:6px; cursor:pointer; font-weight:500; }
+    nav ul { list-style:none; padding:1rem 0; margin:0; }
+    nav a { display:block; padding:0.75rem 1.5rem; color:#4b5563; text-decoration:none; font-weight:500; cursor: pointer; }
+    nav a.active, nav a:hover { background:var(--light); color:var(--primary); border-right: 4px solid var(--primary); }
+    
+    header { background:var(--primary); color:white; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
+    main { padding:2rem; overflow-y:auto; height: calc(100vh - 65px); }
+    
+    /* Components */
+    .card { background:white; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.05); padding:1.5rem; margin-bottom:1.5rem; }
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+    
+    table { width:100%; border-collapse:collapse; margin-top: 1rem; }
+    th, td { padding:0.8rem; text-align:left; border-bottom:1px solid #e5e7eb; }
+    th { background:var(--light); font-size: 0.85rem; text-transform: uppercase; color: var(--gray); }
+    
+    button { background:var(--primary); color:white; border:none; padding:0.6rem 1.2rem; border-radius:6px; cursor:pointer; font-weight:500; transition: 0.2s; }
     button:hover { background:var(--primary-dark); }
-    button.danger { background:var(--danger); } button.danger:hover { background:#dc2626; }
-    button.secondary { background:#6b7280; } button.secondary:hover { background:#4b5563; }
-    input, select, textarea { padding:0.75rem 1rem; border:1px solid #d1d5db; border-radius:6px; font-size:1rem; }
-    table { width:100%; border-collapse:collapse; font-size:0.95rem; }
-    th, td { padding:1rem; text-align:left; border-bottom:1px solid #e5e7eb; }
-    th { background:var(--light); font-weight:600; color:#374151; }
-    .status-badge { padding:0.35rem 0.75rem; border-radius:999px; font-size:0.8rem; font-weight:500; }
+    button.secondary { background: var(--gray); }
+    button:disabled { background: #cbd5e1; cursor: not-allowed; }
+    
+    input, select, textarea { padding:0.6rem; border:1px solid #d1d5db; border-radius:6px; width: 100%; }
+    .status-badge { padding:0.2rem 0.6rem; border-radius:12px; font-size:0.75rem; font-weight:600; }
     .status-pending { background:#fef3c7; color:#92400e; }
-    .status-registered { background:#d1fae5; color:#065f46; }
-    .status-active { background:#dbeafe; color:#1e40af; }
-    .status-inactive { background:#fee2e2; color:#991b1b; }
-    #message, #authMessage { margin-top:1rem; padding:1rem; border-radius:6px; }
-    .success { background:#d1fae5; color:#065f46; }
-    .error { background:#fee2e2; color:#991b1b; }
-    .courses-grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:1.5rem; }
-    .course-card { border:1px solid #e5e7eb; border-radius:8px; padding:1.25rem; background:#fff; }
-    .assign-form { display:flex; flex-wrap:wrap; gap:1rem; margin-top:1rem; }
-    @media (max-width:1024px) { .layout { grid-template-columns:1fr; } aside { display:none; } }
+    .status-active { background:#d1fae5; color:#065f46; }
+    
+    /* Grid for Reports/Courses */
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap:1.5rem; }
+    .stat-card { text-align: center; padding: 2rem; }
+    .stat-card h1 { font-size: 2.5rem; margin: 0.5rem 0; color: var(--primary); }
   </style>
 </head>
 <body>
@@ -51,84 +56,111 @@
     <div class="logo">LMS Admin</div>
     <nav>
       <ul>
-        <li><a href="#" class="active">Learners</a></li>
-        <li><a href="#courses-section">Courses</a></li>
-        <li><a href="#">Assignments</a></li>
-        <li><a href="#">Reports</a></li>
+        <li><a class="nav-link active" data-target="learners-sec">Learners</a></li>
+        <li><a class="nav-link" data-target="courses-sec">Courses</a></li>
+        <li><a class="nav-link" data-target="assign-sec">Assignments</a></li>
+        <li><a class="nav-link" data-target="reports-sec">Reports</a></li>
       </ul>
     </nav>
   </aside>
 
-  <div style="display:flex; flex-direction:column; height:100vh;">
+  <div style="width:100%;">
     <header>
-      <h1 style="margin:0; font-size:1.4rem;">Manage Learners & Courses</h1>
-      <button id="signOutBtn">Sign Out</button>
+      <h2 id="view-title" style="margin:0;">Learners</h2>
+      <button id="signOutBtn" style="background:rgba(255,255,255,0.2)">Sign Out</button>
     </header>
 
     <main>
-      <div id="auth-section" class="card" style="max-width:500px; margin:4rem auto; display:none;">
-        <h2>Admin Login</h2>
-        <button id="googleSignInBtn">Sign in with Google</button>
-        <div id="authMessage"></div>
+      <div id="auth-section" class="card" style="max-width:400px; margin:5rem auto; text-align:center;">
+        <h2>Admin Portal</h2>
+        <button id="googleSignInBtn" style="width:100%;">Sign in with Google</button>
       </div>
 
       <div id="dashboard" style="display:none;">
-
-        <!-- Invite Learner (existing) -->
-        <div class="card">
-          <h2>Invite New Learner</h2>
-          <form id="inviteForm" style="display:flex; gap:1rem; flex-wrap:wrap;">
-            <input type="email" id="learnerEmail" placeholder="Learner's email" required style="flex:1;" />
-            <button type="submit">Send Invite</button>
-          </form>
-          <div id="message"></div>
-        </div>
-
-        <!-- Courses Section -->
-        <div class="card" id="courses-section">
-          <h2>Courses</h2>
-          <form id="addCourseForm" style="margin-bottom:2rem;">
-            <input type="text" id="courseTitle" placeholder="Course title" required style="width:100%; margin-bottom:0.75rem;" />
-            <textarea id="courseDesc" placeholder="Short description" rows="2" style="width:100%; margin-bottom:0.75rem;"></textarea>
-            <button type="submit">Create Course</button>
-          </form>
-
-          <div class="courses-grid" id="coursesList"></div>
-        </div>
-
-        <!-- Learners Table with Assignment -->
-        <div class="card">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-bottom:1.25rem;">
-            <h2>Learners & Course Assignments</h2>
-            <div>
-              <select id="courseSelectForAssign" style="margin-right:0.75rem; min-width:220px;">
-                <option value="">Select course to assign...</option>
-              </select>
-              <button id="bulkAssignBtn" class="secondary" disabled>Bulk Assign Selected</button>
+        
+        <section id="learners-sec" class="content-section active">
+          <div class="card">
+            <h3>Invite Learner</h3>
+            <div style="display:flex; gap:10px;">
+              <input type="email" id="inviteEmail" placeholder="Enter email address">
+              <button id="sendInviteBtn">Invite</button>
             </div>
           </div>
+          <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <h3>Registered Learners</h3>
+              <div>
+                <select id="bulkCourseSelect" style="width:200px; margin-right:10px;"></select>
+                <button id="bulkAssignBtn" class="secondary" disabled>Bulk Assign</button>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th><input type="checkbox" id="masterCheck"></th>
+                  <th>Email</th>
+                  <th>Status</th>
+                  <th>Invited Date</th>
+                </tr>
+              </thead>
+              <tbody id="learnersList"></tbody>
+            </table>
+          </div>
+        </section>
 
-          <table id="learnersTable">
-            <thead>
-              <tr>
-                <th><input type="checkbox" id="selectAll" /></th>
-                <th>Email</th>
-                <th>Name</th>
-                <th>Status</th>
-                <th>Assigned Courses</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
+        <section id="courses-sec" class="content-section">
+          <div class="card">
+            <h3>Add New Course</h3>
+            <input type="text" id="courseTitle" placeholder="Course Title" style="margin-bottom:10px;">
+            <textarea id="courseDesc" placeholder="Description" rows="2" style="margin-bottom:10px;"></textarea>
+            <button id="saveCourseBtn">Create Course</button>
+          </div>
+          <div class="grid" id="coursesGrid"></div>
+        </section>
+
+        <section id="assign-sec" class="content-section">
+          <div class="card">
+            <h3>Active Assignments</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Learner</th>
+                  <th>Course</th>
+                  <th>Assigned Date</th>
+                </tr>
+              </thead>
+              <tbody id="assignmentsList"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="reports-sec" class="content-section">
+          <div class="grid">
+            <div class="card stat-card">
+              <h3>Total Learners</h3>
+              <h1 id="count-learners">0</h1>
+            </div>
+            <div class="card stat-card">
+              <h3>Total Courses</h3>
+              <h1 id="count-courses">0</h1>
+            </div>
+            <div class="card stat-card">
+              <h3>Total Enrollments</h3>
+              <h1 id="count-assigns">0</h1>
+            </div>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
 </div>
 
 <script type="module">
-  // Your existing firebaseConfig
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import { getDatabase, ref, push, set, serverTimestamp, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyDLvkRwSpd-hbPaDP31pV1H-4N5_Re-_xc",
     authDomain: "learnermanagementsystem-f3b6a.firebaseapp.com",
@@ -136,254 +168,170 @@
     projectId: "learnermanagementsystem-f3b6a",
     storageBucket: "learnermanagementsystem-f3b6a.firebasestorage.app",
     messagingSenderId: "173549259244",
-    appId: "1:173549259244:web:f8722018a989c484a7d8c9",
-    measurementId: "G-K1VW244B7P"
+    appId: "1:173549259244:web:f8722018a989c484a7d8c9"
   };
-
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-  import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-  import { getDatabase, ref, push, set, serverTimestamp, onValue, query, orderByChild, remove, update, get } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  const authSection = document.getElementById('auth-section');
-  const dashboard = document.getElementById('dashboard');
-  const messageDiv = document.getElementById('message');
+  // --- UI NAVIGATION ---
+  const navLinks = document.querySelectorAll('.nav-link');
+  const sections = document.querySelectorAll('.content-section');
+  const viewTitle = document.getElementById('view-title');
 
-  let currentUser = null;
-  let selectedLearners = new Set();   // for bulk assign
-  let coursesMap = {};                // courseKey → {title, ...}
-
-  onAuthStateChanged(auth, (user) => {
-    currentUser = user;
-    if (user) {
-      authSection.style.display = 'none';
-      dashboard.style.display = 'block';
-      loadCourses();
-      loadLearnersList();
-    } else {
-      authSection.style.display = 'block';
-      dashboard.style.display = 'none';
-    }
-  });
-
-  document.getElementById('googleSignInBtn')?.addEventListener('click', async () => {
-    const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); } 
-    catch (error) { document.getElementById('authMessage').innerHTML = `<div class="error">${error.message}</div>`; }
-  });
-
-  document.getElementById('signOutBtn').addEventListener('click', () => signOut(auth));
-
-  // ─── Courses ─────────────────────────────────────
-  async function loadCourses() {
-    const coursesRef = ref(db, 'courses');
-    onValue(coursesRef, (snap) => {
-      const listEl = document.getElementById('coursesList');
-      const selectEl = document.getElementById('courseSelectForAssign');
-      listEl.innerHTML = '';
-      selectEl.innerHTML = '<option value="">Select course to assign...</option>';
-
-      if (!snap.exists()) {
-        listEl.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:2rem;">No courses yet</p>';
-        return;
-      }
-
-      coursesMap = {};
-      const courses = [];
-      snap.forEach(child => {
-        const data = child.val();
-        data.key = child.key;
-        coursesMap[child.key] = data;
-        courses.push(data);
-      });
-
-      courses.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
-
-      courses.forEach(c => {
-        // Course card
-        const card = document.createElement('div');
-        card.className = 'course-card';
-        card.innerHTML = `
-          <h3>${c.title}</h3>
-          <p style="color:var(--gray);">${c.description || 'No description'}</p>
-          <small>Created: ${c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '—'}</small>
-        `;
-        listEl.appendChild(card);
-
-        // Select option
-        const opt = document.createElement('option');
-        opt.value = c.key;
-        opt.textContent = c.title;
-        selectEl.appendChild(opt);
-      });
-
-      document.getElementById('courseSelectForAssign').disabled = false;
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      const target = link.dataset.target;
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      sections.forEach(s => s.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+      viewTitle.textContent = link.textContent;
     });
-  }
+  });
 
-  document.getElementById('addCourseForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const title = document.getElementById('courseTitle').value.trim();
-    const desc  = document.getElementById('courseDesc').value.trim();
-
-    if (!title) return;
-
-    try {
-      const newRef = push(ref(db, 'courses'));
-      await set(newRef, {
-        title,
-        description: desc,
-        createdAt: serverTimestamp(),
-        createdBy: currentUser?.uid || 'admin',
-        status: 'active'
-      });
-      e.target.reset();
-      messageDiv.textContent = `Course "${title}" created!`;
-      messageDiv.className = 'success';
-    } catch (err) {
-      messageDiv.textContent = `Error: ${err.message}`;
-      messageDiv.className = 'error';
+  // --- AUTH LOGIC ---
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById('auth-section').style.display = 'none';
+      document.getElementById('dashboard').style.display = 'block';
+      loadAllData();
+    } else {
+      document.getElementById('auth-section').style.display = 'block';
+      document.getElementById('dashboard').style.display = 'none';
     }
   });
 
-  // ─── Learners with Assignments ───────────────────
-  function loadLearnersList() {
-    const learnersRef = ref(db, 'learners');
-    onValue(query(learnersRef, orderByChild('invitedAt')), (snap) => {
-      const tbody = document.querySelector('#learnersTable tbody');
-      tbody.innerHTML = '';
+  document.getElementById('googleSignInBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+  document.getElementById('signOutBtn').onclick = () => signOut(auth);
 
-      if (!snap.exists()) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:3rem;">No learners yet</td></tr>';
-        return;
-      }
-
-      const learners = [];
+  // --- DATA LOADING ---
+  function loadAllData() {
+    // 1. Load Learners
+    onValue(ref(db, 'learners'), (snap) => {
+      const list = document.getElementById('learnersList');
+      list.innerHTML = '';
+      let count = 0;
       snap.forEach(child => {
         const d = child.val();
-        d.key = child.key;
-        learners.push(d);
-      });
-
-      learners.sort((a,b) => (b.invitedAt||0) - (a.invitedAt||0));
-
-      learners.forEach(data => {
-        const row = document.createElement('tr');
-        const statusClass = `status-${(data.status||'pending').toLowerCase()}`;
-        const courseCount = data.assignedCourseCount || 0;
-
-        row.innerHTML = `
-          <td><input type="checkbox" class="row-select" data-key="${data.key}" /></td>
-          <td>${data.email}</td>
-          <td>${data.name || '—'}</td>
-          <td><span class="status-badge ${statusClass}">${data.status || 'Pending'}</span></td>
-          <td>${courseCount} course${courseCount !== 1 ? 's' : ''}</td>
-          <td>
-            <button onclick="showAssignModal('${data.key}', '${data.email}')">Assign Course</button>
-            <button class="secondary" onclick="viewAssignments('${data.key}')">View</button>
-          </td>
+        count++;
+        list.innerHTML += `
+          <tr>
+            <td><input type="checkbox" class="learner-cb" value="${child.key}"></td>
+            <td>${d.email}</td>
+            <td><span class="status-badge status-pending">${d.status || 'Pending'}</span></td>
+            <td>${d.invitedAt ? new Date(d.invitedAt).toLocaleDateString() : 'N/A'}</td>
+          </tr>
         `;
-        tbody.appendChild(row);
       });
+      document.getElementById('count-learners').textContent = count;
+      setupCheckboxLogic();
+    });
+
+    // 2. Load Courses
+    onValue(ref(db, 'courses'), (snap) => {
+      const grid = document.getElementById('coursesGrid');
+      const select = document.getElementById('bulkCourseSelect');
+      grid.innerHTML = '';
+      select.innerHTML = '<option value="">-- Assign to Course --</option>';
+      let count = 0;
+      snap.forEach(child => {
+        const d = child.val();
+        count++;
+        grid.innerHTML += `
+          <div class="card">
+            <h4 style="margin:0;">${d.title}</h4>
+            <p style="color:var(--gray); font-size:0.9rem;">${d.description || 'No description'}</p>
+          </div>`;
+        select.innerHTML += `<option value="${child.key}">${d.title}</option>`;
+      });
+      document.getElementById('count-courses').textContent = count;
+    });
+
+    // 3. Load Assignments
+    onValue(ref(db, 'courseAssignments'), async (snap) => {
+      const list = document.getElementById('assignmentsList');
+      list.innerHTML = '';
+      
+      const lSnap = await get(ref(db, 'learners'));
+      const cSnap = await get(ref(db, 'courses'));
+      const learners = lSnap.val() || {};
+      const courses = cSnap.val() || {};
+
+      let count = 0;
+      snap.forEach(child => {
+        const d = child.val();
+        count++;
+        list.innerHTML += `
+          <tr>
+            <td>${learners[d.learnerId]?.email || 'Unknown'}</td>
+            <td>${courses[d.courseId]?.title || 'Unknown'}</td>
+            <td>${new Date(d.assignedAt).toLocaleDateString()}</td>
+          </tr>`;
+      });
+      document.getElementById('count-assigns').textContent = count;
     });
   }
 
-  // Checkbox selection for bulk
-  document.getElementById('selectAll')?.addEventListener('change', (e) => {
-    document.querySelectorAll('.row-select').forEach(cb => cb.checked = e.target.checked);
-    updateBulkButton();
-  });
+  // --- ACTIONS ---
+  
+  // Create Course
+  document.getElementById('saveCourseBtn').onclick = async () => {
+    const title = document.getElementById('courseTitle').value;
+    const description = document.getElementById('courseDesc').value;
+    if(!title) return alert("Title required");
+    await push(ref(db, 'courses'), { title, description, createdAt: serverTimestamp() });
+    document.getElementById('courseTitle').value = '';
+    document.getElementById('courseDesc').value = '';
+  };
 
-  document.addEventListener('change', (e) => {
-    if (e.target.classList.contains('row-select')) {
-      updateBulkButton();
-    }
-  });
+  // Invite Learner
+  document.getElementById('sendInviteBtn').onclick = async () => {
+    const email = document.getElementById('inviteEmail').value.toLowerCase();
+    if(!email) return;
+    await push(ref(db, 'learners'), { email, invitedAt: serverTimestamp(), status: 'Pending' });
+    document.getElementById('inviteEmail').value = '';
+  };
 
-  function updateBulkButton() {
-    selectedLearners.clear();
-    document.querySelectorAll('.row-select:checked').forEach(cb => {
-      selectedLearners.add(cb.dataset.key);
-    });
+  // Bulk Assign Logic
+  function setupCheckboxLogic() {
+    const master = document.getElementById('masterCheck');
+    const cbs = document.querySelectorAll('.learner-cb');
     const btn = document.getElementById('bulkAssignBtn');
-    const courseId = document.getElementById('courseSelectForAssign').value;
-    btn.disabled = selectedLearners.size === 0 || !courseId;
+    
+    master.onchange = () => {
+      cbs.forEach(c => c.checked = master.checked);
+      toggleBtn();
+    };
+    cbs.forEach(c => c.onchange = toggleBtn);
+
+    function toggleBtn() {
+      const anyChecked = Array.from(cbs).some(c => c.checked);
+      btn.disabled = !anyChecked;
+    }
   }
 
-  document.getElementById('courseSelectForAssign')?.addEventListener('change', updateBulkButton);
-
-  document.getElementById('bulkAssignBtn')?.addEventListener('click', async () => {
-    const courseId = document.getElementById('courseSelectForAssign').value;
-    if (!courseId || selectedLearners.size === 0) return;
-
-    if (!confirm(`Assign "${coursesMap[courseId]?.title}" to ${selectedLearners.size} learner(s)?`)) return;
-
+  document.getElementById('bulkAssignBtn').onclick = async () => {
+    const courseId = document.getElementById('bulkCourseSelect').value;
+    if(!courseId) return alert("Select a course first");
+    
+    const selected = Array.from(document.querySelectorAll('.learner-cb:checked')).map(cb => cb.value);
     const updates = {};
-    const now = serverTimestamp();
+    const now = Date.now();
 
-    for (const learnerId of selectedLearners) {
-      const assignRef = push(ref(db, 'courseAssignments'));
-      updates[`courseAssignments/${assignRef.key}`] = {
-        courseId,
-        learnerId,
-        assignedAt: now,
-        assignedBy: currentUser?.uid,
-        status: 'assigned'
+    selected.forEach(learnerId => {
+      const newKey = push(ref(db, 'courseAssignments')).key;
+      updates[`courseAssignments/${newKey}`] = {
+        learnerId, courseId, assignedAt: now
       };
-      // Optional: increment count (transaction better in production)
-      updates[`learners/${learnerId}/assignedCourseCount`] = (await get(ref(db, `learners/${learnerId}/assignedCourseCount`))).val() + 1 || 1;
-    }
+    });
 
-    try {
-      await update(ref(db), updates);
-      messageDiv.textContent = `Assigned to ${selectedLearners.size} learner(s)`;
-      messageDiv.className = 'success';
-      selectedLearners.clear();
-      document.getElementById('selectAll').checked = false;
-      updateBulkButton();
-    } catch (err) {
-      messageDiv.textContent = `Error: ${err.message}`;
-      messageDiv.className = 'error';
-    }
-  });
-
-  // Single learner assign (placeholder - can open modal in future)
-  window.showAssignModal = (learnerKey, email) => {
-    const courseId = prompt(`Enter course key to assign to ${email} (or use dropdown in bulk)`);
-    if (!courseId) return;
-    // Similar logic as bulk but for one
-    alert(`Would assign course ${courseId} to ${learnerKey} — implement fully if needed`);
+    await update(ref(db), updates);
+    alert(`Assigned to ${selected.length} learners!`);
+    document.getElementById('masterCheck').checked = false;
+    setupCheckboxLogic();
   };
-
-  window.viewAssignments = (learnerKey) => {
-    alert(`View assignments for learner ${learnerKey} — open modal/table in future`);
-    // Future: query courseAssignments where learnerId == learnerKey, join with courses
-  };
-
-  // Existing invite logic (adapted path to 'learners')
-  document.getElementById('inviteForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('learnerEmail').value.trim().toLowerCase();
-    if (!email) return;
-
-    try {
-      const newRef = push(ref(db, 'learners'));
-      await set(newRef, {
-        email,
-        invitedAt: serverTimestamp(),
-        status: 'Pending'
-      });
-      messageDiv.textContent = `Invited ${email}`;
-      messageDiv.className = 'success';
-      e.target.reset();
-    } catch (err) {
-      messageDiv.textContent = `Error: ${err.message}`;
-      messageDiv.className = 'error';
-    }
-  });
 </script>
 </body>
 </html>
