@@ -22,7 +22,7 @@
     
     .unread-badge {
       position: absolute; right: 12px; background: var(--danger); color: white;
-      font-size: 10px; padding: 2px 6px; border-radius: 10px; display: none;
+      font-size: 10px; padding: 2px 7px; border-radius: 10px; display: none; font-weight: 800;
     }
 
     .main-wrapper{flex:1; display:flex; flex-direction:column; min-width: 0;}
@@ -47,17 +47,29 @@
     .content-section{display:none}
     .content-section.active{display:block}
     
+    /* Modern Timetable */
     .tt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
     .tt-day-col { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--border); min-height: 150px; }
     .tt-day-title { text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 10px; color: var(--primary); }
     .tt-slot { background: var(--card-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); margin-bottom: 5px; font-size: 11px; position: relative; box-shadow: var(--shadow);}
     .tt-del { position: absolute; top: 2px; right: 5px; color: var(--danger); cursor: pointer; font-size: 14px; }
 
-    #chat-box { height: 350px; overflow-y: auto; padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
-    .chat-msg { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 13px; position: relative; }
-    .chat-msg.admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-    .chat-msg.student { align-self: flex-start; background: white; border: 1px solid var(--border); border-bottom-left-radius: 2px; }
-    .chat-time { display: block; font-size: 9px; opacity: 0.7; margin-top: 4px; text-align: right; }
+    /* Modern Chat Bubbles */
+    #chat-box { height: 400px; overflow-y: auto; padding: 1.5rem; background: #f1f5f9; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .chat-date-group { text-align: center; font-size: 10px; font-weight: 800; color: var(--gray); margin: 15px 0 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chat-msg { max-width: 80%; padding: 10px 14px; font-size: 13.5px; position: relative; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    
+    .chat-msg.admin { 
+        align-self: flex-end; background: var(--primary); color: white; 
+        border-radius: 15px 15px 2px 15px; 
+    }
+    .chat-msg.student { 
+        align-self: flex-start; background: white; color: var(--text-main); 
+        border: 1px solid var(--border); border-radius: 15px 15px 15px 2px; 
+    }
+    
+    .chat-sender { display: block; font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: 0.8; }
+    .chat-time { display: block; font-size: 9px; opacity: 0.7; margin-top: 5px; text-align: right; font-weight: 500; }
   </style>
 </head>
 <body>
@@ -221,7 +233,6 @@
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_PRESET);
-    // Explicitly set resource_type to auto or raw for PDF support
     formData.append("resource_type", "auto"); 
     const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
     const data = await resp.json();
@@ -245,7 +256,6 @@
       const table = document.getElementById('submissionTable'); table.innerHTML = '';
       snap.forEach(c => {
         const d = c.val();
-        // Added rel="noopener" for better browser compatibility
         table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:bold;">View PDF</a></td></tr>`;
       });
     });
@@ -264,26 +274,39 @@
     onValue(ref(db, 'chats'), snap => {
       const box = document.getElementById('chat-box'); box.innerHTML = '';
       let lastMsg = null;
+      let lastDateLabel = "";
 
       snap.forEach(c => {
         const d = c.val();
         const isSelf = d.sender === auth.currentUser.email;
-        const timeStr = d.timestamp ? new Date(d.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
+        const msgDate = new Date(d.timestamp);
+        const dateString = msgDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const timeString = d.timestamp ? msgDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
         
+        // Show date header if date changed
+        if(dateString !== lastDateLabel) {
+            box.innerHTML += `<div class="chat-date-group">${dateString}</div>`;
+            lastDateLabel = dateString;
+        }
+
         box.innerHTML += `
           <div class="chat-msg ${isSelf?'admin':'student'}">
-            <b>${isSelf?'Admin':d.sender}</b><br>
+            <span class="chat-sender">${isSelf?'Admin':d.sender}</span>
             ${d.text}
-            <span class="chat-time">${timeStr}</span>
+            <span class="chat-time">${timeString}</span>
           </div>`;
         lastMsg = d;
       });
 
+      // Handle Unread and Browser Notifications
       if(!initialLoad && lastMsg && lastMsg.sender !== auth.currentUser.email) {
         if(!isChatActive) {
           unreadCount++;
           updateUnreadUI();
-          new Notification("New Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
+          // System Pop-up
+          if(Notification.permission === "granted") {
+            new Notification("New Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
+          }
         }
       }
       initialLoad = false;
@@ -334,9 +357,7 @@
     if(email && qual) {
         await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
         alert("Learner Enrolled");
-    } else {
-        alert("Email and Course are required");
-    }
+    } else { alert("Email and Course are required"); }
   };
 
   document.getElementById('btnAddTT').onclick = async () => {
@@ -359,7 +380,7 @@
       link.classList.add('active');
       document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
       document.getElementById(target).classList.add('active');
-      document.getElementById('view-title').textContent = link.innerText.split('0')[0].trim();
+      document.getElementById('view-title').textContent = link.querySelector('span').innerText.trim();
 
       if(target === 'chats-sec') {
         isChatActive = true;
