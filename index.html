@@ -30,18 +30,29 @@
     main{padding:2.5rem;overflow-y:auto;flex:1}
     .card{background:var(--card-bg);border-radius:16px;border:1px solid var(--border);padding:1.8rem;margin-bottom:1.5rem;box-shadow:0 1px 3px 0 rgb(0 0 0 / .1)}
     
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
+    .stat-card{background:var(--primary);color:white;padding:1.5rem;border-radius:12px;text-align:center}
+    .stat-card h4{margin:0;font-size:0.9rem;opacity:0.8}
+    .stat-card p{margin:10px 0 0;font-size:2rem;font-weight:800}
+
     table{width:100%;border-collapse:collapse;margin-top:1rem}
     th,td{padding:1.2rem;text-align:left;border-bottom:1px solid var(--border)}
     th{background:var(--bg);font-size:.7rem;text-transform:uppercase;color:var(--gray);font-weight:700}
     button{background:var(--primary);color:#fff;border:none;padding:.65rem 1.4rem;border-radius:9999px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
-    button:disabled{opacity:0.5; cursor:not-allowed;}
     button.success{background:var(--success)}
     button.danger{background:var(--danger)}
+    button:disabled{opacity:0.6; cursor:not-allowed}
     input,select,textarea{padding:.75rem;border:1px solid var(--border);border-radius:10px;width:100%;margin-bottom:12px;background:var(--bg);color:var(--text-main);font-family: inherit;}
     .label{font-size:11px;color:var(--gray);font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase}
     .content-section{display:none}
     .content-section.active{display:block}
     
+    .tt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .tt-day-col { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--border); min-height: 150px; }
+    .tt-day-title { text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 10px; color: var(--primary); }
+    .tt-slot { background: var(--card-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); margin-bottom: 5px; font-size: 11px; position: relative; box-shadow: var(--shadow);}
+    .tt-del { position: absolute; top: 2px; right: 5px; color: var(--danger); cursor: pointer; font-size: 14px; }
+
     #chat-box { height: 350px; overflow-y: auto; padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
     .chat-msg { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 13px; position: relative; }
     .chat-msg.admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
@@ -80,14 +91,38 @@
 
       <div id="dashboard" style="display:none">
         
+        <section id="invite-sec" class="content-section active">
+          <div class="card">
+            <h3>Enroll Learner</h3>
+            <label class="label">Email</label><input type="email" id="newLearnerEmail">
+            <label class="label">Course</label><select class="qual-drop" id="qualSelect"></select>
+            <label class="label">Subjects</label><textarea id="learnerSubjects" rows="2"></textarea>
+            <button id="provisionBtn" class="success" style="width:100%">Complete Enrollment</button>
+          </div>
+        </section>
+
+        <section id="analytics-sec" class="content-section">
+          <div class="stat-grid">
+            <div class="stat-card"><h4>Total Learners</h4><p id="stat-enrollment">0</p></div>
+            <div class="stat-card" style="background:var(--success)"><h4>Work Submissions</h4><p id="stat-submissions">0</p></div>
+          </div>
+          <div class="card">
+            <h3>Submission Tracker</h3>
+            <table>
+              <thead><tr><th>Student</th><th>Assignment</th><th>Date</th><th>Work</th></tr></thead>
+              <tbody id="submissionTable"></tbody>
+            </table>
+          </div>
+        </section>
+
         <section id="materials-sec" class="content-section">
           <div class="card">
             <h3>Upload Learning Materials</h3>
             <input type="text" id="matTitle" placeholder="Title">
             <select class="qual-drop" id="matQual"></select>
-            <label class="label">PDF Document</label>
-            <input type="file" id="matFileInput" accept=".pdf">
-            <button id="btnPostMat" class="success" style="width:100%">Upload & Post</button>
+            <label class="label">Select PDF Document</label>
+            <input type="file" id="matFileInput" accept=".pdf" style="margin-bottom: 20px;">
+            <button id="btnPostMat" class="success" style="width:100%">Post Material</button>
           </div>
         </section>
 
@@ -97,16 +132,47 @@
             <input type="text" id="assTitle" placeholder="Assignment Title">
             <select class="qual-drop" id="assQual"></select>
             <label class="label">Due Date</label><input type="date" id="assDate">
-            <label class="label">Assignment Brief (PDF)</label>
-            <input type="file" id="assFileInput" accept=".pdf">
-            <button id="btnPostAss" class="success" style="width:100%">Upload & Assign</button>
+            <label class="label">Upload Assignment Brief (PDF)</label>
+            <input type="file" id="assFileInput" accept=".pdf" style="margin-bottom: 20px;">
+            <button id="btnPostAss" class="success" style="width:100%">Assign Work</button>
           </div>
         </section>
 
-        <section id="invite-sec" class="content-section active"><div class="card"><h3>Enroll Learner</h3><label class="label">Email</label><input type="email" id="newLearnerEmail"><label class="label">Course</label><select class="qual-drop" id="qualSelect"></select><label class="label">Subjects</label><textarea id="learnerSubjects" rows="2"></textarea><button id="provisionBtn" class="success" style="width:100%">Complete Enrollment</button></div></section>
-        <section id="chats-sec" class="content-section"><div class="card"><div id="chat-box"></div><div style="display:flex;gap:10px"><input type="text" id="chatInput" style="margin-bottom:0" placeholder="Type message..."><button id="btnSendChat">Send</button></div></div></section>
-        <section id="directory-sec" class="content-section"><div class="card"><table><thead><tr><th>Email</th><th>Qual</th><th>Action</th></tr></thead><tbody id="directoryList"></tbody></table></div></section>
-        <section id="analytics-sec" class="content-section"><div class="stat-grid"><div class="card"><h4>Total Learners</h4><p id="stat-enrollment">0</p></div></div></section>
+        <section id="timetable-sec" class="content-section">
+          <div class="card">
+            <h3>Add Schedule</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <select id="ttDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select>
+              <input type="time" id="ttTime">
+              <input type="text" id="ttSubject" placeholder="Subject">
+            </div>
+            <button id="btnAddTT" class="success" style="width:100%;margin-top:10px">Add Slot</button>
+          </div>
+          <div class="tt-grid">
+            <div class="tt-day-col" data-day="Monday"><div class="tt-day-title">Mon</div></div>
+            <div class="tt-day-col" data-day="Tuesday"><div class="tt-day-title">Tue</div></div>
+            <div class="tt-day-col" data-day="Wednesday"><div class="tt-day-title">Wed</div></div>
+            <div class="tt-day-col" data-day="Thursday"><div class="tt-day-title">Thu</div></div>
+            <div class="tt-day-col" data-day="Friday"><div class="tt-day-title">Fri</div></div>
+          </div>
+        </section>
+
+        <section id="chats-sec" class="content-section">
+          <div class="card">
+            <div id="chat-box"></div>
+            <div style="display:flex;gap:10px">
+              <input type="text" id="chatInput" style="margin-bottom:0" placeholder="Type message...">
+              <button id="btnSendChat">Send</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="directory-sec" class="content-section">
+          <div class="card">
+            <table><thead><tr><th>Email</th><th>Qual</th><th>Action</th></tr></thead><tbody id="directoryList"></tbody></table>
+          </div>
+        </section>
+
       </div>
     </main>
   </div>
@@ -131,7 +197,8 @@
 
   const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dsbzvgotw/upload";
   const CLOUDINARY_PRESET = "alinamodiba";
-
+  const courses = ["BCom Accounting", "BSc Computer Science", "LLB Law", "Diploma in IT"];
+  
   let unreadCount = 0;
   let isChatActive = false;
 
@@ -146,7 +213,6 @@
     }
   });
 
-  // --- CLOUDINARY UPLOAD FUNCTION ---
   async function uploadToCloudinary(file) {
     const formData = new FormData();
     formData.append("file", file);
@@ -157,7 +223,6 @@
   }
 
   function initApp() {
-    const courses = ["BCom Accounting", "BSc Computer Science", "LLB Law", "Diploma in IT"];
     document.querySelectorAll('.qual-drop').forEach(sel => {
       sel.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
     });
@@ -170,21 +235,50 @@
       });
     });
 
+    onValue(ref(db, 'submissions'), snap => {
+      document.getElementById('stat-submissions').innerText = snap.size || 0;
+      const table = document.getElementById('submissionTable'); table.innerHTML = '';
+      snap.forEach(c => {
+        const d = c.val();
+        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank">View</a></td></tr>`;
+      });
+    });
+
+    onValue(ref(db, 'timetable'), snap => {
+      document.querySelectorAll('.tt-day-col').forEach(col => {
+        const title = col.querySelector('.tt-day-title'); col.innerHTML = ''; col.appendChild(title);
+      });
+      snap.forEach(c => {
+        const d = c.val(); const col = document.querySelector(`.tt-day-col[data-day="${d.day}"]`);
+        if(col) col.innerHTML += `<div class="tt-slot"><b>${d.subject}</b><br>${d.time}<i class="tt-del" onclick="deleteItem('timetable/${c.key}')">×</i></div>`;
+      });
+    });
+
     let initialLoad = true;
     onValue(ref(db, 'chats'), snap => {
       const box = document.getElementById('chat-box'); box.innerHTML = '';
       let lastMsg = null;
+
       snap.forEach(c => {
         const d = c.val();
         const isSelf = d.sender === auth.currentUser.email;
         const timeStr = d.timestamp ? new Date(d.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
-        box.innerHTML += `<div class="chat-msg ${isSelf?'admin':'student'}"><b>${isSelf?'Admin':d.sender}</b><br>${d.text}<span class="chat-time">${timeStr}</span></div>`;
+        
+        box.innerHTML += `
+          <div class="chat-msg ${isSelf?'admin':'student'}">
+            <b>${isSelf?'Admin':d.sender}</b><br>
+            ${d.text}
+            <span class="chat-time">${timeStr}</span>
+          </div>`;
         lastMsg = d;
       });
-      if(!initialLoad && lastMsg && lastMsg.sender !== auth.currentUser.email && !isChatActive) {
-        unreadCount++;
-        updateUnreadUI();
-        new Notification("New Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
+
+      if(!initialLoad && lastMsg && lastMsg.sender !== auth.currentUser.email) {
+        if(!isChatActive) {
+          unreadCount++;
+          updateUnreadUI();
+          new Notification("New Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
+        }
       }
       initialLoad = false;
       box.scrollTop = box.scrollHeight;
@@ -206,31 +300,41 @@
     try {
       const link = await uploadToCloudinary(file);
       await push(ref(db, 'materials'), {title, qual: document.getElementById('matQual').value, link});
-      alert("Posted!");
-    } catch(e) { alert("Upload failed"); }
-    btn.disabled = false; btn.innerText = "Upload & Post";
+      alert("Material Posted");
+    } catch(err) { alert("Upload failed"); }
+    btn.disabled = false; btn.innerText = "Post Material";
   };
 
   document.getElementById('btnPostAss').onclick = async (e) => {
     const btn = e.target;
     const file = document.getElementById('assFileInput').files[0];
     const title = document.getElementById('assTitle').value;
-    if(!file || !title) return alert("Fields required");
+    if(!file || !title) return alert("All fields and File required");
     btn.disabled = true; btn.innerText = "Uploading...";
     try {
       const link = await uploadToCloudinary(file);
       await push(ref(db, 'assignments'), {title, qual: document.getElementById('assQual').value, dueDate: document.getElementById('assDate').value, link});
-      alert("Assigned!");
-    } catch(e) { alert("Upload failed"); }
-    btn.disabled = false; btn.innerText = "Upload & Assign";
+      alert("Assignment Issued");
+    } catch(err) { alert("Upload failed"); }
+    btn.disabled = false; btn.innerText = "Assign Work";
+  };
+
+  document.getElementById('provisionBtn').onclick = async () => {
+    const email = document.getElementById('newLearnerEmail').value;
+    const qual = document.getElementById('qualSelect').value;
+    const subjects = document.getElementById('learnerSubjects').value;
+    if(email && qual) await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
+  };
+
+  document.getElementById('btnAddTT').onclick = async () => {
+    const day = document.getElementById('ttDay').value, time = document.getElementById('ttTime').value, subject = document.getElementById('ttSubject').value;
+    if(day && time && subject) await push(ref(db, 'timetable'), {day, time, subject});
   };
 
   document.getElementById('btnSendChat').onclick = async () => {
-    const input = document.getElementById('chatInput');
-    if(input.value) {
-      await push(ref(db, 'chats'), {text: input.value, sender: auth.currentUser.email, timestamp: serverTimestamp()});
-      input.value = '';
-    }
+    const text = document.getElementById('chatInput').value;
+    if(text) await push(ref(db, 'chats'), {text, sender: auth.currentUser.email, timestamp: serverTimestamp()});
+    document.getElementById('chatInput').value = '';
   };
 
   window.deleteItem = path => { if(confirm("Delete?")) remove(ref(db, path)); };
@@ -242,7 +346,15 @@
       link.classList.add('active');
       document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
       document.getElementById(target).classList.add('active');
-      if(target === 'chats-sec') { isChatActive = true; unreadCount = 0; updateUnreadUI(); } else { isChatActive = false; }
+      document.getElementById('view-title').textContent = link.innerText.split('0')[0].trim();
+
+      if(target === 'chats-sec') {
+        isChatActive = true;
+        unreadCount = 0;
+        updateUnreadUI();
+      } else {
+        isChatActive = false;
+      }
     };
   });
 
