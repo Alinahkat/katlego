@@ -95,7 +95,9 @@
           <div class="card">
             <h3>Enroll Learner</h3>
             <label class="label">Email</label><input type="email" id="newLearnerEmail">
-            <label class="label">Course</label><select class="qual-drop" id="qualSelect"></select>
+            <label class="label">Course (Select or Type New)</label>
+            <input list="qualOptions" id="qualSelect" placeholder="Select or type a course...">
+            <datalist id="qualOptions"></datalist>
             <label class="label">Subjects</label><textarea id="learnerSubjects" rows="2"></textarea>
             <button id="provisionBtn" class="success" style="width:100%">Complete Enrollment</button>
           </div>
@@ -119,7 +121,8 @@
           <div class="card">
             <h3>Upload Learning Materials</h3>
             <input type="text" id="matTitle" placeholder="Title">
-            <select class="qual-drop" id="matQual"></select>
+            <label class="label">Course</label>
+            <input list="qualOptions" id="matQual" placeholder="Select or type course...">
             <label class="label">Select PDF Document</label>
             <input type="file" id="matFileInput" accept=".pdf" style="margin-bottom: 20px;">
             <button id="btnPostMat" class="success" style="width:100%">Post Material</button>
@@ -130,7 +133,8 @@
           <div class="card">
             <h3>Issue Assignment</h3>
             <input type="text" id="assTitle" placeholder="Assignment Title">
-            <select class="qual-drop" id="assQual"></select>
+            <label class="label">Course</label>
+            <input list="qualOptions" id="assQual" placeholder="Select or type course...">
             <label class="label">Due Date</label><input type="date" id="assDate">
             <label class="label">Upload Assignment Brief (PDF)</label>
             <input type="file" id="assFileInput" accept=".pdf" style="margin-bottom: 20px;">
@@ -223,9 +227,9 @@
   }
 
   function initApp() {
-    document.querySelectorAll('.qual-drop').forEach(sel => {
-      sel.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
-    });
+    // Populate the shared datalist for all course inputs
+    const datalist = document.getElementById('qualOptions');
+    datalist.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
 
     onValue(ref(db, 'learners'), snap => {
       document.getElementById('stat-enrollment').innerText = snap.size || 0;
@@ -240,7 +244,8 @@
       const table = document.getElementById('submissionTable'); table.innerHTML = '';
       snap.forEach(c => {
         const d = c.val();
-        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank">View</a></td></tr>`;
+        // This displays the learner's uploaded PDF link
+        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank" style="color:var(--primary); font-weight:bold;">View PDF</a></td></tr>`;
       });
     });
 
@@ -295,11 +300,12 @@
     const btn = e.target;
     const file = document.getElementById('matFileInput').files[0];
     const title = document.getElementById('matTitle').value;
-    if(!file || !title) return alert("Title and File required");
+    const qual = document.getElementById('matQual').value;
+    if(!file || !title || !qual) return alert("Title, Course, and File required");
     btn.disabled = true; btn.innerText = "Uploading...";
     try {
       const link = await uploadToCloudinary(file);
-      await push(ref(db, 'materials'), {title, qual: document.getElementById('matQual').value, link});
+      await push(ref(db, 'materials'), {title, qual: qual, link});
       alert("Material Posted");
     } catch(err) { alert("Upload failed"); }
     btn.disabled = false; btn.innerText = "Post Material";
@@ -309,11 +315,12 @@
     const btn = e.target;
     const file = document.getElementById('assFileInput').files[0];
     const title = document.getElementById('assTitle').value;
-    if(!file || !title) return alert("All fields and File required");
+    const qual = document.getElementById('assQual').value;
+    if(!file || !title || !qual) return alert("All fields and File required");
     btn.disabled = true; btn.innerText = "Uploading...";
     try {
       const link = await uploadToCloudinary(file);
-      await push(ref(db, 'assignments'), {title, qual: document.getElementById('assQual').value, dueDate: document.getElementById('assDate').value, link});
+      await push(ref(db, 'assignments'), {title, qual: qual, dueDate: document.getElementById('assDate').value, link});
       alert("Assignment Issued");
     } catch(err) { alert("Upload failed"); }
     btn.disabled = false; btn.innerText = "Assign Work";
@@ -323,7 +330,12 @@
     const email = document.getElementById('newLearnerEmail').value;
     const qual = document.getElementById('qualSelect').value;
     const subjects = document.getElementById('learnerSubjects').value;
-    if(email && qual) await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
+    if(email && qual) {
+        await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
+        alert("Learner Enrolled");
+    } else {
+        alert("Email and Course are required");
+    }
   };
 
   document.getElementById('btnAddTT').onclick = async () => {
