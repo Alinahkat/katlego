@@ -61,12 +61,16 @@
     .chat-sender { display: block; font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: 0.8; }
     .chat-time { display: block; font-size: 9px; opacity: 0.7; margin-top: 5px; text-align: right; font-weight: 500; }
 
-    /* New Toast Styles */
+    /* Toast Styles */
     #toast {
       position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
       background: var(--success); color: white; padding: 12px 24px;
       border-radius: 50px; font-weight: 600; box-shadow: var(--shadow);
-      z-index: 9999; display: none; animation: fadeInOut 3s forwards;
+      z-index: 9999; display: none;
+    }
+    .show-toast {
+        display: block !important;
+        animation: fadeInOut 3s forwards;
     }
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translate(-50%, -20px); }
@@ -230,13 +234,14 @@
   let unreadCount = 0;
   let isChatActive = false;
 
-  // Function to show custom message instead of alert
   function showToast(msg, color = "#10b981") {
     const toast = document.getElementById('toast');
     toast.innerText = msg;
     toast.style.background = color;
-    toast.style.display = 'block';
-    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+    toast.classList.remove('show-toast');
+    void toast.offsetWidth; // Trigger reflow for animation
+    toast.classList.add('show-toast');
+    setTimeout(() => { toast.classList.remove('show-toast'); }, 3000);
   }
 
   onAuthStateChanged(auth, user => {
@@ -390,7 +395,7 @@
     const day = document.getElementById('ttDay').value, time = document.getElementById('ttTime').value, subject = document.getElementById('ttSubject').value;
     if(day && time && subject) {
       await push(ref(db, 'timetable'), {day, time, subject});
-      showToast("Slot Added");
+      showToast("Slot Added Successfully");
     }
   };
 
@@ -400,7 +405,10 @@
     document.getElementById('chatInput').value = '';
   };
 
-  window.deleteItem = path => { if(confirm("Delete?")) { remove(ref(db, path)); showToast("Deleted Successfully", "#f59e0b"); } };
+  window.deleteItem = path => { 
+    remove(ref(db, path)); 
+    showToast("Deleted Successfully", "#f59e0b");
+  };
 
   document.querySelectorAll('.nav-link').forEach(link => {
     link.onclick = () => {
