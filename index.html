@@ -25,6 +25,7 @@
     main{padding:2.5rem;overflow-y:auto;flex:1}
     .card{background:var(--card-bg);border-radius:16px;border:1px solid var(--border);padding:1.8rem;margin-bottom:1.5rem;box-shadow:0 1px 3px 0 rgb(0 0 0 / .1)}
     
+    /* Analytics Styles */
     .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
     .stat-card{background:var(--primary);color:white;padding:1.5rem;border-radius:12px;text-align:center}
     .stat-card h4{margin:0;font-size:0.9rem;opacity:0.8}
@@ -42,12 +43,14 @@
     .content-section{display:none}
     .content-section.active{display:block}
     
+    /* Timetable Grid */
     .tt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
     .tt-day-col { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--border); min-height: 150px; }
     .tt-day-title { text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 10px; color: var(--primary); }
     .tt-slot { background: var(--card-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); margin-bottom: 5px; font-size: 11px; position: relative; box-shadow: var(--shadow);}
     .tt-del { position: absolute; top: 2px; right: 5px; color: var(--danger); cursor: pointer; font-size: 14px; }
 
+    /* Chat UI */
     #chat-box { height: 350px; overflow-y: auto; padding: 1rem; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; border: 1px solid var(--border); }
     .chat-msg { max-width: 75%; padding: 8px 12px; border-radius: 12px; font-size: 13px; }
     .chat-msg.admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
@@ -202,10 +205,12 @@
   });
 
   function initApp() {
+    // Populate Course Dropdowns
     document.querySelectorAll('.qual-drop').forEach(sel => {
       sel.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
     });
 
+    // Analytics & Directory
     onValue(ref(db, 'learners'), snap => {
       document.getElementById('stat-enrollment').innerText = snap.size || 0;
       const list = document.getElementById('directoryList'); list.innerHTML = '';
@@ -223,6 +228,7 @@
       });
     });
 
+    // Timetable
     onValue(ref(db, 'timetable'), snap => {
       document.querySelectorAll('.tt-day-col').forEach(col => {
         const title = col.querySelector('.tt-day-title'); col.innerHTML = ''; col.appendChild(title);
@@ -233,6 +239,7 @@
       });
     });
 
+    // Chat
     onValue(ref(db, 'chats'), snap => {
       const box = document.getElementById('chat-box'); box.innerHTML = '';
       snap.forEach(c => {
@@ -243,23 +250,20 @@
     });
   }
 
-  // --- UPDATED CLOUDINARY LOGIC ---
+  // --- CLOUDINARY LOGIC ---
   const cloudWidget = (linkId, statusId) => {
     window.cloudinary.openUploadWidget({ 
-      cloudName: "dsbzvgotw", 
+      cloudName: "dsbzvgotw",
       uploadPreset: "alinamodiba", 
       clientAllowedFormats: ["pdf"],
-      resourceType: "raw" // Required for non-image files like PDF
+      resourceType: "raw" 
     }, (err, res) => {
       if (!err && res.event === "success") {
         document.getElementById(linkId).value = res.info.secure_url;
         document.getElementById(statusId).innerText = "✅ PDF Ready: " + res.info.original_filename;
-        alert("File uploaded successfully!");
       }
     });
   };
-
-  // Attach functions to buttons
   document.getElementById('btnUploadMatFile').onclick = () => cloudWidget('matLink', 'matFileStatus');
   document.getElementById('btnUploadAssFile').onclick = () => cloudWidget('assLink', 'assFileStatus');
 
@@ -268,38 +272,26 @@
     const email = document.getElementById('newLearnerEmail').value;
     const qual = document.getElementById('qualSelect').value;
     const subjects = document.getElementById('learnerSubjects').value;
-    if(email && qual) {
-        await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
-        alert("Learner enrolled!");
-    }
+    if(email && qual) await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
   };
 
   document.getElementById('btnPostMat').onclick = async () => {
-    const title = document.getElementById('matTitle').value, 
-          qual = document.getElementById('matQual').value, 
-          link = document.getElementById('matLink').value;
+    const title = document.getElementById('matTitle').value, qual = document.getElementById('matQual').value, link = document.getElementById('matLink').value;
     if(title && link) {
-        await push(ref(db, 'materials'), {title, qual, link});
-        alert("Material posted!");
-        document.getElementById('matTitle').value = '';
-        document.getElementById('matFileStatus').innerText = '';
-    } else {
-        alert("Please upload a PDF first.");
+      await push(ref(db, 'materials'), {title, qual, link});
+      document.getElementById('matTitle').value = '';
+      document.getElementById('matLink').value = '';
+      document.getElementById('matFileStatus').innerText = '';
     }
   };
 
   document.getElementById('btnPostAss').onclick = async () => {
-    const title = document.getElementById('assTitle').value, 
-          qual = document.getElementById('assQual').value, 
-          date = document.getElementById('assDate').value, 
-          link = document.getElementById('assLink').value;
+    const title = document.getElementById('assTitle').value, qual = document.getElementById('assQual').value, date = document.getElementById('assDate').value, link = document.getElementById('assLink').value;
     if(title && link && date) {
-        await push(ref(db, 'assignments'), {title, qual, dueDate: date, link});
-        alert("Assignment issued!");
-        document.getElementById('assTitle').value = '';
-        document.getElementById('assFileStatus').innerText = '';
-    } else {
-        alert("Please fill all fields and upload a PDF.");
+      await push(ref(db, 'assignments'), {title, qual, dueDate: date, link});
+      document.getElementById('assTitle').value = '';
+      document.getElementById('assLink').value = '';
+      document.getElementById('assFileStatus').innerText = '';
     }
   };
 
