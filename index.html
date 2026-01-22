@@ -221,13 +221,14 @@
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_PRESET);
+    // Explicitly set resource_type to auto or raw for PDF support
+    formData.append("resource_type", "auto"); 
     const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
     const data = await resp.json();
     return data.secure_url;
   }
 
   function initApp() {
-    // Populate the shared datalist for all course inputs
     const datalist = document.getElementById('qualOptions');
     datalist.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
 
@@ -244,8 +245,8 @@
       const table = document.getElementById('submissionTable'); table.innerHTML = '';
       snap.forEach(c => {
         const d = c.val();
-        // This displays the learner's uploaded PDF link
-        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank" style="color:var(--primary); font-weight:bold;">View PDF</a></td></tr>`;
+        // Added rel="noopener" for better browser compatibility
+        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td><a href="${d.link}" target="_blank" rel="noopener noreferrer" style="color:var(--primary); font-weight:bold;">View PDF</a></td></tr>`;
       });
     });
 
