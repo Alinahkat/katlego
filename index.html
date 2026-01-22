@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LMS Admin - Real-time Management</title>
+  <title>LMS Admin - Full Provisioning & Management</title>
   <style>
     :root {
       --primary: #1e40af; --primary-dark: #1e3a8a;
@@ -38,15 +38,12 @@
     input, select, textarea { padding:0.6rem; border:1px solid #d1d5db; border-radius:6px; width: 100%; margin-bottom: 10px; }
     .label { font-size: 12px; color: var(--gray); font-weight: 600; display: block; margin-bottom: 4px; }
     
-    /* Chat Styling */
-    #chat-box { height: 400px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 1.5rem; border-radius: 8px; background: #f9fafb; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 10px; }
-    .msg-container { max-width: 80%; padding: 10px; border-radius: 12px; font-size: 14px; line-height: 1.4; position: relative; }
-    .msg-mine { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-    .msg-theirs { align-self: flex-start; background: #e5e7eb; color: #1f2937; border-bottom-left-radius: 2px; }
-    .msg-sender { font-size: 10px; font-weight: bold; margin-bottom: 4px; display: block; opacity: 0.8; }
-    .msg-time { font-size: 9px; display: block; margin-top: 4px; text-align: right; opacity: 0.7; }
-    
     .subject-tag { display:inline-block; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:4px; font-size:11px; margin:2px; border: 1px solid #bbf7d0; }
+    
+    #chat-box { height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; background: #f9fafb; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 8px; }
+    .msg { padding: 0.8rem; border-radius: 8px; background: white; border: 1px solid #e5e7eb; max-width: 80%; }
+    .msg b { color: var(--primary); font-size: 11px; display: block; margin-bottom: 4px; }
+    .msg-text { font-size: 14px; line-height: 1.4; }
   </style>
 </head>
 <body>
@@ -62,6 +59,7 @@
         <li><a class="nav-link" data-target="assignments-sec">Assignments</a></li>
         <li><a class="nav-link" data-target="timetable-sec">Timetable</a></li>
         <li><a class="nav-link" data-target="chats-sec">Lecturer Chats</a></li>
+        <li><a class="nav-link" data-target="reports-sec">Analytics</a></li>
       </ul>
     </nav>
   </aside>
@@ -82,38 +80,89 @@
         
         <section id="invite-sec" class="content-section active">
           <div class="card">
-            <h3>New Learner Enrollment</h3>
+            <h3>New Learner Provisioning</h3>
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
               <div>
                 <label class="label">Learner Email</label>
                 <input type="email" id="newLearnerEmail" placeholder="student@example.ac.za">
               </div>
               <div>
-                <label class="label">Qualification</label>
+                <label class="label">Assign Qualification</label>
                 <select class="qual-drop" id="qualSelect"></select>
               </div>
             </div>
-            <button id="provisionBtn" class="success" style="width:100%; margin-top:10px;">Provision Student</button>
+            <div id="modulePreview" style="padding:15px; border:2px dashed #e5e7eb; border-radius:8px; margin: 10px 0;"></div>
+            <button id="provisionBtn" class="success" style="width:100%;">Invite & Enroll Learner</button>
+          </div>
+        </section>
+
+        <section id="directory-sec" class="content-section">
+          <div class="card">
+            <h3>Learner Directory</h3>
+            <table>
+              <thead><tr><th>Email</th><th>Qualification</th><th>Modules</th><th>Actions</th></tr></thead>
+              <tbody id="directoryList"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="materials-sec" class="content-section">
+          <div class="card">
+            <h3>Upload Learning Materials</h3>
+            <label class="label">Material Title</label>
+            <input type="text" id="matTitle" placeholder="e.g. Lecture 1: Intro to Accounting">
+            <label class="label">Target Qualification</label>
+            <select class="qual-drop" id="matQual"></select>
+            <label class="label">Resource URL (Drive/PDF Link)</label>
+            <input type="text" id="matLink" placeholder="https://...">
+            <button id="btnUploadMat" class="success">Post Material</button>
+          </div>
+        </section>
+
+        <section id="assignments-sec" class="content-section">
+          <div class="card">
+            <h3>Issue Assignment</h3>
+            <input type="text" id="assTitle" placeholder="Assignment Name">
+            <select class="qual-drop" id="assQual"></select>
+            <label class="label">Due Date</label>
+            <input type="date" id="assDate">
+            <button id="btnPostAss" class="success">Post Assignment</button>
+          </div>
+        </section>
+
+        <section id="timetable-sec" class="content-section">
+          <div class="card">
+            <h3>Weekly Timetable Management</h3>
+            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px;">
+              <select id="ttDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select>
+              <input type="time" id="ttTime">
+              <input type="text" id="ttSubject" placeholder="Subject Name">
+            </div>
+            <button id="btnAddTT" style="width:100%">Add Slot to Schedule</button>
+            <table style="margin-top:20px;">
+              <thead><tr><th>Day</th><th>Time</th><th>Subject</th></tr></thead>
+              <tbody id="timetableList"></tbody>
+            </table>
           </div>
         </section>
 
         <section id="chats-sec" class="content-section">
           <div class="card">
-            <h3>Live Lecturer Chat</h3>
-            <p style="color:var(--gray); font-size:12px; margin-bottom:15px;">Real-time communication with all enrolled students.</p>
-            <div id="chat-box">
-              </div>
+            <h3>Lecturer Announcement Chat</h3>
+            <div id="chat-box"></div>
             <div style="display:flex; gap:10px;">
-              <input type="text" id="chatInput" placeholder="Type your announcement or reply...">
+              <input type="text" id="chatInput" placeholder="Send a message to all students...">
               <button id="btnSendChat">Send</button>
             </div>
           </div>
         </section>
 
-        <section id="directory-sec" class="content-section"><div class="card"><h3>Directory</h3><table id="dirTable"></table></div></section>
-        <section id="materials-sec" class="content-section"><div class="card"><h3>Materials</h3><input type="text" id="matIn" placeholder="Link"><button id="addMat">Upload</button></div></section>
-        <section id="assignments-sec" class="content-section"><div class="card"><h3>Assignments</h3></div></section>
-        <section id="timetable-sec" class="content-section"><div class="card"><h3>Timetable</h3></div></section>
+        <section id="reports-sec" class="content-section">
+          <div style="display:flex; gap:20px;">
+            <div class="card" style="flex:1"><h3>Students</h3><h1 id="count-learners">0</h1></div>
+            <div class="card" style="flex:1"><h3>Materials</h3><h1 id="count-mats">0</h1></div>
+          </div>
+        </section>
 
       </div>
     </main>
@@ -123,7 +172,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
   import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-  import { getDatabase, ref, push, onValue, serverTimestamp, query, orderByChild, limitToLast } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
+  import { getDatabase, ref, push, onValue, update, remove, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDLvkRwSpd-hbPaDP31pV1H-4N5_Re-_xc",
@@ -139,8 +188,14 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  const tertiaryCurriculum = ["BCom Accounting", "BSc Computer Science", "LLB Law", "Diploma in Engineering"];
+  const tertiaryCurriculum = {
+    "BCom Accounting": ["Financial Accounting 101", "Business Management", "Commercial Law"],
+    "BSc Computer Science": ["Intro to Programming", "Calculus 1", "Data Structures"],
+    "LLB Law": ["Family Law", "Legal Foundations", "Criminal Law"],
+    "Diploma in Engineering": ["Engineering Physics", "Technical Drawing", "Mechanics"]
+  };
 
+  // Auth Observer
   onAuthStateChanged(auth, (user) => {
     document.getElementById('auth-section').style.display = user ? 'none' : 'block';
     document.getElementById('dashboard').style.display = user ? 'block' : 'none';
@@ -150,56 +205,112 @@
   });
 
   function initApp() {
-    // Populate Dropdowns
+    // Populate all qualification dropdowns
     document.querySelectorAll('.qual-drop').forEach(select => {
-        select.innerHTML = tertiaryCurriculum.map(q => `<option value="${q}">${q}</option>`).join('');
+        select.innerHTML = '<option value="">-- Select Qual --</option>';
+        Object.keys(tertiaryCurriculum).forEach(q => {
+            select.innerHTML += `<option value="${q}">${q}</option>`;
+        });
     });
 
-    // --- REAL-TIME CHAT LOGIC ---
-    const chatRef = ref(db, 'chats');
-    const chatQuery = query(chatRef, orderByChild('timestamp'), limitToLast(50));
+    // Preview modules for learner provisioning
+    document.getElementById('qualSelect').onchange = (e) => {
+        const mods = tertiaryCurriculum[e.target.value] || [];
+        document.getElementById('modulePreview').innerHTML = mods.map(m => `<span class="subject-tag">${m}</span>`).join('');
+    };
 
-    // Listen for new messages
-    onValue(chatQuery, (snapshot) => {
-        const chatBox = document.getElementById('chat-box');
-        chatBox.innerHTML = '';
-        
-        snapshot.forEach((childSnapshot) => {
-            const data = childSnapshot.val();
-            const isMine = data.uid === auth.currentUser.uid;
-            const time = data.timestamp ? new Date(data.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
-            
-            const msgDiv = document.createElement('div');
-            msgDiv.className = `msg-container ${isMine ? 'msg-mine' : 'msg-theirs'}`;
-            msgDiv.innerHTML = `
-                <span class="msg-sender">${isMine ? 'You (Admin)' : data.email}</span>
-                ${data.text}
-                <span class="msg-time">${time}</span>
-            `;
-            chatBox.appendChild(msgDiv);
+    // Real-time Learners List
+    onValue(ref(db, 'learners'), (snap) => {
+      const list = document.getElementById('directoryList');
+      list.innerHTML = '';
+      let count = 0;
+      snap.forEach(child => {
+        count++;
+        const d = child.val();
+        list.innerHTML += `<tr><td>${d.email}</td><td>${d.assignedQual}</td><td>${(tertiaryCurriculum[d.assignedQual] || []).join(', ')}</td>
+        <td><button class="danger" onclick="deleteItem('learners/${child.key}')">Delete</button></td></tr>`;
+      });
+      document.getElementById('count-learners').textContent = count;
+    });
+
+    // Real-time Timetable
+    onValue(ref(db, 'timetable'), (snap) => {
+      const list = document.getElementById('timetableList');
+      list.innerHTML = '';
+      snap.forEach(child => {
+        const d = child.val();
+        list.innerHTML += `<tr><td>${d.day}</td><td>${d.time}</td><td>${d.subject}</td></tr>`;
+      });
+    });
+
+    // --- REAL-TIME CHAT CONNECTION ---
+    onValue(ref(db, 'chats'), (snap) => {
+      const box = document.getElementById('chat-box');
+      box.innerHTML = '';
+      if (snap.exists()) {
+        snap.forEach(child => {
+          const d = child.val();
+          const msgDiv = document.createElement('div');
+          msgDiv.className = 'msg';
+          msgDiv.innerHTML = `<b>${d.user}</b><div class="msg-text">${d.text}</div>`;
+          box.appendChild(msgDiv);
         });
-        chatBox.scrollTop = chatBox.scrollHeight;
+        box.scrollTop = box.scrollHeight;
+      }
     });
   }
 
-  // Send Message Function
-  document.getElementById('btnSendChat').onclick = async () => {
-    const input = document.getElementById('chatInput');
-    const text = input.value.trim();
-    
-    if (text !== "") {
-        const user = auth.currentUser;
-        await push(ref(db, 'chats'), {
-            uid: user.uid,
-            email: user.email,
-            text: text,
-            timestamp: serverTimestamp()
-        });
-        input.value = '';
+  // --- Actions ---
+
+  // Global Delete Helper
+  window.deleteItem = (path) => { if(confirm("Delete this?")) remove(ref(db, path)); };
+
+  document.getElementById('provisionBtn').onclick = async () => {
+    const email = document.getElementById('newLearnerEmail').value;
+    const qual = document.getElementById('qualSelect').value;
+    if(email && qual) {
+        await push(ref(db, 'learners'), { email, assignedQual: qual, createdAt: serverTimestamp() });
+        alert("Learner Added");
     }
   };
 
-  // Nav Logic
+  document.getElementById('btnUploadMat').onclick = async () => {
+    const title = document.getElementById('matTitle').value;
+    const qual = document.getElementById('matQual').value;
+    const link = document.getElementById('matLink').value;
+    await push(ref(db, 'materials'), { title, qual, link });
+    alert("Material Uploaded");
+  };
+
+  document.getElementById('btnPostAss').onclick = async () => {
+    const title = document.getElementById('assTitle').value;
+    const qual = document.getElementById('assQual').value;
+    const dueDate = document.getElementById('assDate').value;
+    await push(ref(db, 'assignments'), { title, qual, dueDate });
+    alert("Assignment Issued");
+  };
+
+  document.getElementById('btnAddTT').onclick = async () => {
+    const day = document.getElementById('ttDay').value;
+    const time = document.getElementById('ttTime').value;
+    const subject = document.getElementById('ttSubject').value;
+    await push(ref(db, 'timetable'), { day, time, subject });
+  };
+
+  // --- SEND CHAT ACTION ---
+  document.getElementById('btnSendChat').onclick = async () => {
+    const text = document.getElementById('chatInput').value;
+    if(text.trim() && auth.currentUser) {
+        await push(ref(db, 'chats'), { 
+          user: auth.currentUser.email, 
+          text: text, 
+          ts: serverTimestamp() 
+        });
+        document.getElementById('chatInput').value = '';
+    }
+  };
+
+  // UI Navigation
   document.querySelectorAll('.nav-link').forEach(link => {
     link.onclick = () => {
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
