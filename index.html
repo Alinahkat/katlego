@@ -40,10 +40,9 @@
     
     .subject-tag { display:inline-block; background:#dcfce7; color:#166534; padding:2px 8px; border-radius:4px; font-size:11px; margin:2px; border: 1px solid #bbf7d0; }
     
-    #chat-box { height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; background: #f9fafb; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 8px; }
-    .msg { padding: 0.8rem; border-radius: 8px; background: white; border: 1px solid #e5e7eb; max-width: 80%; }
-    .msg b { color: var(--primary); font-size: 11px; display: block; margin-bottom: 4px; }
-    .msg-text { font-size: 14px; line-height: 1.4; }
+    #chat-box { height: 300px; overflow-y: auto; border: 1px solid #e5e7eb; padding: 1rem; border-radius: 8px; background: #f9fafb; margin-bottom: 1rem; }
+    .msg { margin-bottom: 0.8rem; padding: 0.5rem; border-radius: 5px; background: white; border: 1px solid #eee; }
+    .msg b { color: var(--primary); font-size: 12px; display: block; }
   </style>
 </head>
 <body>
@@ -233,6 +232,13 @@
       document.getElementById('count-learners').textContent = count;
     });
 
+    // Real-time Materials Count
+    onValue(ref(db, 'materials'), (snap) => {
+      let count = 0;
+      snap.forEach(() => count++);
+      document.getElementById('count-mats').textContent = count;
+    });
+
     // Real-time Timetable
     onValue(ref(db, 'timetable'), (snap) => {
       const list = document.getElementById('timetableList');
@@ -243,20 +249,15 @@
       });
     });
 
-    // --- REAL-TIME CHAT CONNECTION ---
+    // Real-time Chat
     onValue(ref(db, 'chats'), (snap) => {
       const box = document.getElementById('chat-box');
       box.innerHTML = '';
-      if (snap.exists()) {
-        snap.forEach(child => {
-          const d = child.val();
-          const msgDiv = document.createElement('div');
-          msgDiv.className = 'msg';
-          msgDiv.innerHTML = `<b>${d.user}</b><div class="msg-text">${d.text}</div>`;
-          box.appendChild(msgDiv);
-        });
-        box.scrollTop = box.scrollHeight;
-      }
+      snap.forEach(child => {
+        const d = child.val();
+        box.innerHTML += `<div class="msg"><b>${d.user}</b>${d.text}</div>`;
+      });
+      box.scrollTop = box.scrollHeight;
     });
   }
 
@@ -278,34 +279,35 @@
     const title = document.getElementById('matTitle').value;
     const qual = document.getElementById('matQual').value;
     const link = document.getElementById('matLink').value;
-    await push(ref(db, 'materials'), { title, qual, link });
-    alert("Material Uploaded");
+    if(title && qual && link) {
+        await push(ref(db, 'materials'), { title, qual, link });
+        alert("Material Uploaded");
+    }
   };
 
   document.getElementById('btnPostAss').onclick = async () => {
     const title = document.getElementById('assTitle').value;
     const qual = document.getElementById('assQual').value;
     const dueDate = document.getElementById('assDate').value;
-    await push(ref(db, 'assignments'), { title, qual, dueDate });
-    alert("Assignment Issued");
+    if(title && qual && dueDate) {
+        await push(ref(db, 'assignments'), { title, qual, dueDate });
+        alert("Assignment Issued");
+    }
   };
 
   document.getElementById('btnAddTT').onclick = async () => {
     const day = document.getElementById('ttDay').value;
     const time = document.getElementById('ttTime').value;
     const subject = document.getElementById('ttSubject').value;
-    await push(ref(db, 'timetable'), { day, time, subject });
+    if(day && time && subject) {
+        await push(ref(db, 'timetable'), { day, time, subject });
+    }
   };
 
-  // --- SEND CHAT ACTION ---
   document.getElementById('btnSendChat').onclick = async () => {
     const text = document.getElementById('chatInput').value;
-    if(text.trim() && auth.currentUser) {
-        await push(ref(db, 'chats'), { 
-          user: auth.currentUser.email, 
-          text: text, 
-          ts: serverTimestamp() 
-        });
+    if(text && auth.currentUser) {
+        await push(ref(db, 'chats'), { user: auth.currentUser.email, text, ts: serverTimestamp() });
         document.getElementById('chatInput').value = '';
     }
   };
