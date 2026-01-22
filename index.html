@@ -47,27 +47,18 @@
     .content-section{display:none}
     .content-section.active{display:block}
     
-    /* Modern Timetable */
     .tt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
     .tt-day-col { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--border); min-height: 150px; }
     .tt-day-title { text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 10px; color: var(--primary); }
     .tt-slot { background: var(--card-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); margin-bottom: 5px; font-size: 11px; position: relative; box-shadow: var(--shadow);}
     .tt-del { position: absolute; top: 2px; right: 5px; color: var(--danger); cursor: pointer; font-size: 14px; }
 
-    /* Modern Chat Bubbles */
+    /* Modern Chat UI */
     #chat-box { height: 400px; overflow-y: auto; padding: 1.5rem; background: #f1f5f9; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
     .chat-date-group { text-align: center; font-size: 10px; font-weight: 800; color: var(--gray); margin: 15px 0 5px; text-transform: uppercase; letter-spacing: 0.5px; }
     .chat-msg { max-width: 80%; padding: 10px 14px; font-size: 13.5px; position: relative; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-    
-    .chat-msg.admin { 
-        align-self: flex-end; background: var(--primary); color: white; 
-        border-radius: 15px 15px 2px 15px; 
-    }
-    .chat-msg.student { 
-        align-self: flex-start; background: white; color: var(--text-main); 
-        border: 1px solid var(--border); border-radius: 15px 15px 15px 2px; 
-    }
-    
+    .chat-msg.admin { align-self: flex-end; background: var(--primary); color: white; border-radius: 15px 15px 2px 15px; }
+    .chat-msg.student { align-self: flex-start; background: white; color: var(--text-main); border: 1px solid var(--border); border-radius: 15px 15px 15px 2px; }
     .chat-sender { display: block; font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: 0.8; }
     .chat-time { display: block; font-size: 9px; opacity: 0.7; margin-top: 5px; text-align: right; font-weight: 500; }
   </style>
@@ -106,11 +97,16 @@
         <section id="invite-sec" class="content-section active">
           <div class="card">
             <h3>Enroll Learner</h3>
-            <label class="label">Email</label><input type="email" id="newLearnerEmail">
-            <label class="label">Course (Select or Type New)</label>
+            <label class="label">Email Address</label>
+            <input type="email" id="newLearnerEmail" placeholder="student@example.com">
+            
+            <label class="label">Assigned Course</label>
             <input list="qualOptions" id="qualSelect" placeholder="Select or type a course...">
             <datalist id="qualOptions"></datalist>
-            <label class="label">Subjects</label><textarea id="learnerSubjects" rows="2"></textarea>
+            
+            <label class="label">Subjects / Modules</label>
+            <textarea id="learnerSubjects" rows="3" placeholder="Enter subjects (e.g. Accounting, Business Law, Economics)"></textarea>
+            
             <button id="provisionBtn" class="success" style="width:100%">Complete Enrollment</button>
           </div>
         </section>
@@ -283,9 +279,8 @@
         const dateString = msgDate.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         const timeString = d.timestamp ? msgDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '...';
         
-        // Show date header if date changed
         if(dateString !== lastDateLabel) {
-            box.innerHTML += `<div class="chat-date-group">${dateString}</div>`;
+            box.innerHTML += `<div class="chat-date-group">${dateString}</div>` ;
             lastDateLabel = dateString;
         }
 
@@ -298,14 +293,12 @@
         lastMsg = d;
       });
 
-      // Handle Unread and Browser Notifications
       if(!initialLoad && lastMsg && lastMsg.sender !== auth.currentUser.email) {
         if(!isChatActive) {
           unreadCount++;
           updateUnreadUI();
-          // System Pop-up
           if(Notification.permission === "granted") {
-            new Notification("New Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
+            new Notification("New LMS Message", { body: `${lastMsg.sender}: ${lastMsg.text}` });
           }
         }
       }
@@ -355,8 +348,16 @@
     const qual = document.getElementById('qualSelect').value;
     const subjects = document.getElementById('learnerSubjects').value;
     if(email && qual) {
-        await push(ref(db, 'learners'), {email, assignedQual: qual, subjects});
-        alert("Learner Enrolled");
+        await push(ref(db, 'learners'), {
+          email, 
+          assignedQual: qual, 
+          subjects: subjects,
+          timestamp: serverTimestamp()
+        });
+        alert("Learner Enrolled Successfully");
+        document.getElementById('newLearnerEmail').value = '';
+        document.getElementById('qualSelect').value = '';
+        document.getElementById('learnerSubjects').value = '';
     } else { alert("Email and Course are required"); }
   };
 
