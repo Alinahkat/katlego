@@ -126,7 +126,7 @@
     <header>
       <h2 id="view-title">Add Learner</h2>
       <div style="display: flex; align-items: center; gap: 20px;">
-        <div id="live-clock" style="font-size: 13px; color: var(--gray); font-weight: 600;"></div>
+        <div id="live-clock" style="font-size: 13px; color: var(--gray); font-weight: 600; font-family: monospace;"></div>
         <button id="signOutBtn" style="display:none;background:transparent;color:var(--text-main);border:1px solid var(--border)">Sign Out</button>
       </div>
     </header>
@@ -336,7 +336,7 @@
   async function uploadToCloudinary(file) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("alinamodiba", CLOUDINARY_PRESET);
+    formData.append("upload_preset", CLOUDINARY_PRESET);
     const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
     const data = await resp.json();
     return data.secure_url;
@@ -351,7 +351,9 @@
       const list = document.getElementById('directoryList'); list.innerHTML = '';
       snap.forEach(c => {
         const d = c.val();
-        list.innerHTML += `<tr><td>${d.email}</td><td>${d.assignedQual}</td><td><span class="status-pill ${d.lastLogin?'status-active':'status-pending'}">${d.lastLogin?'Active':'Pending'}</span></td><td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td></tr>`;
+        // Check if lastLogin exists to set active status
+        const isActive = d.lastLogin !== undefined && d.lastLogin !== null;
+        list.innerHTML += `<tr><td>${d.email}</td><td>${d.assignedQual}</td><td><span class="status-pill ${isActive?'status-active':'status-pending'}">${isActive?'Active':'Pending'}</span></td><td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td></tr>`;
       });
     });
 
