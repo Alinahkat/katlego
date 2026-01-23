@@ -259,18 +259,8 @@
     const formData = new FormData();
     formData.append("file", file);
     formData.append("upload_preset", CLOUDINARY_PRESET);
-    
-    const resp = await fetch(CLOUDINARY_URL, { 
-      method: "POST", 
-      body: formData 
-    });
-
-    if (!resp.ok) {
-      const errorData = await resp.json();
-      console.error("Cloudinary Error Details:", errorData);
-      throw new Error(errorData.error?.message || "Upload failed");
-    }
-
+    formData.append("resource_type", "auto"); 
+    const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
     const data = await resp.json();
     return data.secure_url;
   }
@@ -334,6 +324,9 @@
       });
 
       if(!initialLoad && lastMsg && lastMsg.sender !== auth.currentUser.email) {
+        // Pop-up visual notification on screen
+        showToast(`New Message: ${lastMsg.text}`, "#2563eb");
+        
         if(!isChatActive) {
           unreadCount++;
           updateUnreadUI();
@@ -359,23 +352,13 @@
     const title = document.getElementById('matTitle').value;
     const qual = document.getElementById('matQual').value;
     if(!file || !title || !qual) return showToast("Title, Course, and File required", "#ef4444");
-    
-    const originalText = btn.innerText;
-    btn.disabled = true; 
-    btn.innerText = "Uploading...";
-    
+    btn.disabled = true; btn.innerText = "Uploading...";
     try {
       const link = await uploadToCloudinary(file);
       await push(ref(db, 'materials'), {title, qual: qual, link});
       showToast("Material Posted Successfully");
-      document.getElementById('matTitle').value = '';
-      document.getElementById('matFileInput').value = '';
-    } catch(err) { 
-      showToast(err.message || "Upload failed", "#ef4444"); 
-    } finally {
-      btn.disabled = false; 
-      btn.innerText = originalText;
-    }
+    } catch(err) { showToast("Upload failed", "#ef4444"); }
+    btn.disabled = false; btn.innerText = "Post Material";
   };
 
   document.getElementById('btnPostAss').onclick = async (e) => {
@@ -384,28 +367,13 @@
     const title = document.getElementById('assTitle').value;
     const qual = document.getElementById('assQual').value;
     if(!file || !title || !qual) return showToast("All fields and File required", "#ef4444");
-    
-    const originalText = btn.innerText;
-    btn.disabled = true; 
-    btn.innerText = "Uploading...";
-    
+    btn.disabled = true; btn.innerText = "Uploading...";
     try {
       const link = await uploadToCloudinary(file);
-      await push(ref(db, 'assignments'), {
-        title, 
-        qual: qual, 
-        dueDate: document.getElementById('assDate').value, 
-        link
-      });
+      await push(ref(db, 'assignments'), {title, qual: qual, dueDate: document.getElementById('assDate').value, link});
       showToast("Assignment Issued Successfully");
-      document.getElementById('assTitle').value = '';
-      document.getElementById('assFileInput').value = '';
-    } catch(err) { 
-      showToast(err.message || "Upload failed", "#ef4444"); 
-    } finally {
-      btn.disabled = false; 
-      btn.innerText = originalText;
-    }
+    } catch(err) { showToast("Upload failed", "#ef4444"); }
+    btn.disabled = false; btn.innerText = "Assign Work";
   };
 
   document.getElementById('provisionBtn').onclick = async () => {
@@ -441,10 +409,8 @@
   };
 
   window.deleteItem = path => { 
-    if(confirm("Are you sure you want to delete this?")) {
-      remove(ref(db, path)); 
-      showToast("Deleted Successfully", "#f59e0b");
-    }
+    remove(ref(db, path)); 
+    showToast("Deleted Successfully", "#f59e0b");
   };
 
   document.querySelectorAll('.nav-link').forEach(link => {
