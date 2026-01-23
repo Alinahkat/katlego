@@ -98,7 +98,9 @@
   <div class="modal-content">
     <div id="modal-icon" style="margin-bottom:1rem"></div>
     <h3 id="modal-title">Notification</h3>
-    <p id="modal-body" style="color:var(--gray); line-height:1.5; margin-bottom:1.5rem"></p>
+    <div id="modal-body-wrapper">
+        <p id="modal-body" style="color:var(--gray); line-height:1.5; margin-bottom:1rem"></p>
+    </div>
     <div id="modal-footer" style="display:flex; gap:10px; justify-content:center"></div>
   </div>
 </div>
@@ -248,23 +250,46 @@
   const courses = ["BCom Accounting", "BSc Computer Science", "LLB Law", "Diploma in IT"];
   
   // --- MODAL SYSTEM ---
-  function showModal({title, body, type, onConfirm}) {
+  function showModal({title, body, type, onConfirm, isEdit = false, currentVal = ""}) {
     const overlay = document.getElementById('modal-overlay');
     const icon = document.getElementById('modal-icon');
     const footer = document.getElementById('modal-footer');
+    const bodyEl = document.getElementById('modal-body');
+    const wrapper = document.getElementById('modal-body-wrapper');
     
     document.getElementById('modal-title').innerText = title;
-    document.getElementById('modal-body').innerText = body;
+    bodyEl.innerText = body;
     footer.innerHTML = '';
     
-    if(type === 'confirm') {
+    // Clean up previous inputs if any
+    const oldInput = document.getElementById('modal-input-field');
+    if(oldInput) oldInput.remove();
+
+    if(isEdit) {
+        icon.innerHTML = '<i data-lucide="edit-3" style="color:var(--primary); width:48px; height:48px"></i>';
+        const input = document.createElement('input');
+        input.id = 'modal-input-field';
+        input.type = 'text';
+        input.value = currentVal;
+        input.style.marginTop = "15px";
+        wrapper.appendChild(input);
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.innerText = "Cancel"; cancelBtn.className = "secondary";
+        cancelBtn.onclick = () => overlay.style.display = 'none';
+        
+        const saveBtn = document.createElement('button');
+        saveBtn.innerText = "Save Changes"; saveBtn.className = "success";
+        saveBtn.onclick = () => { onConfirm(input.value); overlay.style.display = 'none'; };
+        footer.append(cancelBtn, saveBtn);
+    } else if(type === 'confirm') {
       icon.innerHTML = '<i data-lucide="help-circle" style="color:var(--warning); width:48px; height:48px"></i>';
       const cancelBtn = document.createElement('button');
       cancelBtn.innerText = "Cancel"; cancelBtn.className = "secondary";
       cancelBtn.onclick = () => overlay.style.display = 'none';
       
       const okBtn = document.createElement('button');
-      okBtn.innerText = "Proceed"; okBtn.className = "danger";
+      okBtn.innerText = "Confirm Action"; okBtn.className = "danger";
       okBtn.onclick = () => { onConfirm(); overlay.style.display = 'none'; };
       
       footer.append(cancelBtn, okBtn);
@@ -299,7 +324,7 @@
   async function uploadToCloudinary(file) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("alinamodiba", CLOUDINARY_PRESET);
+    formData.append("upload_preset", CLOUDINARY_PRESET);
     formData.append("resource_type", "image"); 
     const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
     const data = await resp.json();
@@ -317,13 +342,7 @@
         const d = c.val();
         const statusClass = d.lastLogin ? 'status-active' : 'status-pending';
         const statusText = d.lastLogin ? 'Active' : 'Pending';
-        
-        list.innerHTML += `<tr>
-          <td>${d.email}</td>
-          <td>${d.assignedQual}</td>
-          <td><span class="status-pill ${statusClass}">${statusText}</span></td>
-          <td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td>
-        </tr>`;
+        list.innerHTML += `<tr><td>${d.email}</td><td>${d.assignedQual}</td><td><span class="status-pill ${statusClass}">${statusText}</span></td><td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td></tr>`;
       });
     });
 
@@ -357,7 +376,7 @@
         box.innerHTML += `
           <div class="chat-msg ${isSelf?'admin':'student'}">
             <div class="chat-actions">
-                <button class="chat-action-btn" onclick="editChatMessage('${c.key}', \`${d.text}\`)"><i data-lucide="edit-3" style="width:14px"></i></button>
+                <button class="chat-action-btn" onclick="editChatModal('${c.key}', \`${d.text}\`)"><i data-lucide="edit-3" style="width:14px"></i></button>
                 <button class="chat-action-btn del" onclick="deleteChatMessage('${c.key}')"><i data-lucide="trash-2" style="width:14px"></i></button>
             </div>
             <span class="chat-sender">${isSelf?'Admin':d.sender}</span>
@@ -370,11 +389,11 @@
     });
   }
 
-  // --- MODAL CHAT ACTIONS ---
+  // --- DELETE & EDIT LOGIC ---
   window.deleteChatMessage = (key) => {
     showModal({
       title: "Delete Message?",
-      body: "Are you sure you want to remove this message from the server? This cannot be undone.",
+      body: "This message will be permanently removed from Firebase.",
       type: "confirm",
       onConfirm: () => {
         remove(ref(db, 'chats/' + key));
@@ -383,25 +402,25 @@
     });
   };
 
-  window.editChatMessage = (key, currentText) => {
-    const newText = prompt("Update message content:", currentText);
-    if (newText && newText !== currentText) {
-      showModal({
-        title: "Confirm Edit",
-        body: `Change message to: "${newText}"?`,
-        type: "confirm",
-        onConfirm: () => {
-          update(ref(db, 'chats/' + key), { text: newText });
-          showToast("Message updated successfully");
+  window.editChatModal = (key, currentText) => {
+    showModal({
+      title: "Edit Message",
+      body: "Enter the new text for your message:",
+      isEdit: true,
+      currentVal: currentText,
+      onConfirm: (newText) => {
+        if(newText && newText !== currentText) {
+            update(ref(db, 'chats/' + key), { text: newText });
+            showToast("Message updated");
         }
-      });
-    }
+      }
+    });
   };
 
   window.deleteLearnerConfirm = key => {
     showModal({
       title: "Remove Learner?",
-      body: "This will permanently delete the learner from Firebase and revoke their access.",
+      body: "This will permanently delete the learner from Firebase and revoke access.",
       type: "confirm",
       onConfirm: () => {
         remove(ref(db, 'learners/' + key));
@@ -417,11 +436,11 @@
     const subjects = document.getElementById('learnerSubjects').value;
     if(email && qual) {
       await push(ref(db, 'learners'), {email, assignedQual: qual, subjects, timestamp: serverTimestamp()});
-      showModal({ title: "Enrolled!", body: `${email} successfully added.`, type: "success" });
+      showModal({ title: "Enrolled!", body: `${email} has been added.`, type: "success" });
       document.getElementById('newLearnerEmail').value = '';
       document.getElementById('qualSelect').value = '';
       document.getElementById('learnerSubjects').value = '';
-    } else { showToast("Missing fields", "#ef4444"); }
+    }
   };
 
   document.getElementById('btnPostMat').onclick = async (e) => {
@@ -455,9 +474,7 @@
 
   document.getElementById('btnSendChat').onclick = async () => {
     const text = document.getElementById('chatInput').value;
-    if(text) {
-      await push(ref(db, 'chats'), { text, sender: auth.currentUser.email, timestamp: serverTimestamp() });
-    }
+    if(text) await push(ref(db, 'chats'), { text, sender: auth.currentUser.email, timestamp: serverTimestamp() });
     document.getElementById('chatInput').value = '';
   };
 
