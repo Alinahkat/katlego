@@ -1,117 +1,436 @@
-<div id="customModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.5); z-index:10000; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-  <div class="card" style="max-width:400px; width:90%; text-align:center; padding:2rem; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);">
-    <div id="modalIcon" style="margin-bottom:1rem;"></div>
-    <h3 id="modalTitle" style="margin-top:0;">Action</h3>
-    <p id="modalMsg" style="color:var(--gray); margin-bottom:1.5rem;"></p>
-    <div style="display:flex; gap:10px; justify-content:center;" id="modalActions">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LMS Admin – Full Management Suite</title>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    :root{
+      --primary:#2563eb;--primary-hover:#1d4ed8;--success:#10b981;--warning:#f59e0b;--danger:#ef4444;
+      --gray:#64748b;--bg:#f8fafc;--card-bg:#ffffff;--text-main:#0f172a;--sidebar-w:260px;
+      --border:#e2e8f0;--shadow:0 4px 6px -1px rgb(0 0 0 / 0.1),0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+    *{box-sizing:border-box;transition:background-color .2s,color .2s}
+    body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);margin:0;color:var(--text-main);height:100vh;overflow:hidden}
+    .layout{display:flex;height:100vh}
+    aside{background:var(--card-bg);border-right:1px solid var(--border);padding:1.5rem 0;width:var(--sidebar-w);z-index:100;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+    .logo{padding:0 1.5rem 2rem;font-size:1.25rem;font-weight:800;color:var(--primary);display:flex;align-items:center;gap:12px}
+    nav a{display:flex;align-items:center;padding:.8rem 1.2rem;color:var(--gray);text-decoration:none;font-weight:500;cursor:pointer;font-size:14px;margin:4px 12px;border-radius:12px;position:relative}
+    nav a.active{background:#eff6ff;color:var(--primary);font-weight:600}
+    
+    .unread-badge {
+      position: absolute; right: 12px; background: var(--danger); color: white;
+      font-size: 10px; padding: 2px 7px; border-radius: 10px; display: none; font-weight: 800;
+    }
+
+    .main-wrapper{flex:1; display:flex; flex-direction:column; min-width: 0;}
+    header{background:var(--card-bg);padding:0 2.5rem;display:flex;justify-content:space-between;align-items:center;min-height:70px;border-bottom:1px solid var(--border)}
+    main{padding:2.5rem;overflow-y:auto;flex:1}
+    .card{background:var(--card-bg);border-radius:16px;border:1px solid var(--border);padding:1.8rem;margin-bottom:1.5rem;box-shadow:0 1px 3px 0 rgb(0 0 0 / .1)}
+    
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
+    .stat-card{background:var(--primary);color:white;padding:1.5rem;border-radius:12px;text-align:center}
+    .stat-card h4{margin:0;font-size:0.9rem;opacity:0.8}
+    .stat-card p{margin:10px 0 0;font-size:2rem;font-weight:800}
+
+    table{width:100%;border-collapse:collapse;margin-top:1rem}
+    th,td{padding:1.2rem;text-align:left;border-bottom:1px solid var(--border)}
+    th{background:var(--bg);font-size:.7rem;text-transform:uppercase;color:var(--gray);font-weight:700}
+    button{background:var(--primary);color:#fff;border:none;padding:.65rem 1.4rem;border-radius:9999px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+    button.success{background:var(--success)}
+    button.danger{background:var(--danger)}
+    button.secondary{background:#e2e8f0; color:var(--text-main)}
+    button:disabled{opacity:0.6; cursor:not-allowed}
+    input,select,textarea{padding:.75rem;border:1px solid var(--border);border-radius:10px;width:100%;margin-bottom:12px;background:var(--bg);color:var(--text-main);font-family: inherit;}
+    .label{font-size:11px;color:var(--gray);font-weight:700;display:block;margin-bottom:6px;text-transform:uppercase}
+    .content-section{display:none}
+    .content-section.active{display:block}
+    
+    /* MODAL STYLES */
+    #modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center; z-index: 9999;
+    }
+    .modal-content {
+      background: white; padding: 2.5rem; border-radius: 20px; width: 100%; max-width: 400px;
+      text-align: center; box-shadow: var(--shadow); transform: scale(0.9); transition: 0.2s;
+    }
+    #modal-overlay.active .modal-content { transform: scale(1); }
+    .status-pill { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 6px; text-transform: uppercase; }
+    .status-pending { background: #fef3c7; color: #92400e; }
+    .status-active { background: #d1fae5; color: #065f46; }
+
+    /* REST OF STYLES */
+    .tt-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .tt-day-col { background: var(--bg); border-radius: 8px; padding: 10px; border: 1px solid var(--border); min-height: 150px; }
+    .tt-day-title { text-align: center; font-weight: 800; font-size: 11px; margin-bottom: 10px; color: var(--primary); }
+    .tt-slot { background: var(--card-bg); padding: 8px; border-radius: 6px; border-left: 3px solid var(--primary); margin-bottom: 5px; font-size: 11px; position: relative; box-shadow: var(--shadow);}
+    .tt-del { position: absolute; top: 2px; right: 5px; color: var(--danger); cursor: pointer; font-size: 14px; }
+    #chat-box { height: 400px; overflow-y: auto; padding: 1.5rem; background: #f1f5f9; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; margin-bottom: 10px; border: 1px solid var(--border); }
+    .chat-date-group { text-align: center; font-size: 10px; font-weight: 800; color: var(--gray); margin: 15px 0 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .chat-msg { max-width: 80%; padding: 10px 14px; font-size: 13.5px; position: relative; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .chat-msg.admin { align-self: flex-end; background: var(--primary); color: white; border-radius: 15px 15px 2px 15px; }
+    .chat-msg.student { align-self: flex-start; background: white; color: var(--text-main); border: 1px solid var(--border); border-radius: 15px 15px 15px 2px; }
+    .chat-sender { display: block; font-size: 10px; font-weight: 700; margin-bottom: 3px; opacity: 0.8; }
+    #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--success); color: white; padding: 12px 24px; border-radius: 50px; font-weight: 600; box-shadow: var(--shadow); z-index: 9999; display: none; }
+    .show-toast { display: block !important; animation: fadeInOut 3s forwards; }
+    @keyframes fadeInOut { 0% { opacity: 0; transform: translate(-50%, -20px); } 15% { opacity: 1; transform: translate(-50%, 0); } 85% { opacity: 1; transform: translate(-50%, 0); } 100% { opacity: 0; transform: translate(-50%, -20px); } }
+    .view-link { color: var(--primary); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+  </style>
+</head>
+<body>
+
+<div id="toast">Action Successful!</div>
+
+<div id="modal-overlay">
+  <div class="modal-content">
+    <div id="modal-icon" style="margin-bottom:1rem"></div>
+    <h3 id="modal-title">Notification</h3>
+    <p id="modal-body" style="color:var(--gray); line-height:1.5; margin-bottom:1.5rem"></p>
+    <div id="modal-footer" style="display:flex; gap:10px; justify-content:center"></div>
+  </div>
+</div>
+
+<div class="layout">
+  <aside>
+    <div class="logo"><i data-lucide="layers"></i><span>LMS Admin</span></div>
+    <nav id="sidebar-nav" style="display:none">
+      <ul>
+        <li><a class="nav-link active" data-target="invite-sec"><i data-lucide="user-plus"></i><span>Add Learner</span></a></li>
+        <li><a class="nav-link" data-target="directory-sec"><i data-lucide="users"></i><span>Directory</span></a></li>
+        <li><a class="nav-link" data-target="materials-sec"><i data-lucide="book-open"></i><span>Materials</span></a></li>
+        <li><a class="nav-link" data-target="assignments-sec"><i data-lucide="file-text"></i><span>Assignments</span></a></li>
+        <li><a class="nav-link" data-target="timetable-sec"><i data-lucide="calendar"></i><span>Timetable</span></a></li>
+        <li><a class="nav-link" data-target="chats-sec" id="nav-chat"><i data-lucide="message-square"></i><span>Chat</span> <span id="unread-count" class="unread-badge">0</span></a></li>
+        <li><a class="nav-link" data-target="analytics-sec"><i data-lucide="bar-chart-3"></i><span>Analytics</span></a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <div class="main-wrapper">
+    <header>
+      <h2 id="view-title">Add Learner</h2>
+      <button id="signOutBtn" style="display:none;background:transparent;color:var(--text-main);border:1px solid var(--border)">Sign Out</button>
+    </header>
+
+    <main>
+      <div id="auth-section" class="card" style="max-width:400px;margin:5rem auto;text-align:center">
+        <h1>Admin Portal</h1>
+        <button id="googleSignInBtn" style="width:100%"><i data-lucide="log-in"></i> Sign in with Google</button>
       </div>
+
+      <div id="dashboard" style="display:none">
+        
+        <section id="invite-sec" class="content-section active">
+          <div class="card">
+            <h3>Enroll Learner</h3>
+            <label class="label">Email Address</label>
+            <input type="email" id="newLearnerEmail" placeholder="student@example.com">
+            <label class="label">Assigned Course</label>
+            <input list="qualOptions" id="qualSelect" placeholder="Select or type a course...">
+            <datalist id="qualOptions"></datalist>
+            <label class="label">Subjects / Modules</label>
+            <textarea id="learnerSubjects" rows="3" placeholder="Enter subjects"></textarea>
+            <button id="provisionBtn" class="success" style="width:100%">Complete Enrollment</button>
+          </div>
+        </section>
+
+        <section id="directory-sec" class="content-section">
+          <div class="card">
+            <table><thead><tr><th>Email</th><th>Qual</th><th>Status</th><th>Action</th></tr></thead><tbody id="directoryList"></tbody></table>
+          </div>
+        </section>
+
+        <section id="analytics-sec" class="content-section">
+          <div class="stat-grid">
+            <div class="stat-card"><h4>Total Learners</h4><p id="stat-enrollment">0</p></div>
+            <div class="stat-card" style="background:var(--success)"><h4>Work Submissions</h4><p id="stat-submissions">0</p></div>
+          </div>
+          <div class="card">
+            <h3>Submission Tracker</h3>
+            <table>
+              <thead><tr><th>Student</th><th>Assignment</th><th>Date</th><th>File</th><th>Action</th></tr></thead>
+              <tbody id="submissionTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="materials-sec" class="content-section">
+          <div class="card">
+            <h3>Upload Learning Materials</h3>
+            <input type="text" id="matTitle" placeholder="Title">
+            <label class="label">Course</label>
+            <input list="qualOptions" id="matQual" placeholder="Select or type course...">
+            <label class="label">Select PDF Document</label>
+            <input type="file" id="matFileInput" accept=".pdf" style="margin-bottom: 20px;">
+            <button id="btnPostMat" class="success" style="width:100%">Post Material</button>
+          </div>
+        </section>
+
+        <section id="assignments-sec" class="content-section">
+          <div class="card">
+            <h3>Issue Assignment</h3>
+            <input type="text" id="assTitle" placeholder="Assignment Title">
+            <label class="label">Course</label>
+            <input list="qualOptions" id="assQual" placeholder="Select or type course...">
+            <label class="label">Due Date</label><input type="date" id="assDate">
+            <label class="label">Upload Assignment Brief (PDF)</label>
+            <input type="file" id="assFileInput" accept=".pdf" style="margin-bottom: 20px;">
+            <button id="btnPostAss" class="success" style="width:100%">Assign Work</button>
+          </div>
+        </section>
+
+        <section id="timetable-sec" class="content-section">
+          <div class="card">
+            <h3>Add Schedule</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <select id="ttDay"><option>Monday</option><option>Tuesday</option><option>Wednesday</option><option>Thursday</option><option>Friday</option></select>
+              <input type="time" id="ttTime">
+              <input type="text" id="ttSubject" placeholder="Subject">
+            </div>
+            <button id="btnAddTT" class="success" style="width:100%;margin-top:10px">Add Slot</button>
+          </div>
+          <div class="tt-grid">
+            <div class="tt-day-col" data-day="Monday"><div class="tt-day-title">Mon</div></div>
+            <div class="tt-day-col" data-day="Tuesday"><div class="tt-day-title">Tue</div></div>
+            <div class="tt-day-col" data-day="Wednesday"><div class="tt-day-title">Wed</div></div>
+            <div class="tt-day-col" data-day="Thursday"><div class="tt-day-title">Thu</div></div>
+            <div class="tt-day-col" data-day="Friday"><div class="tt-day-title">Fri</div></div>
+          </div>
+        </section>
+
+        <section id="chats-sec" class="content-section">
+          <div class="card">
+            <div id="chat-box"></div>
+            <div style="display:flex;gap:10px">
+              <input type="text" id="chatInput" style="margin-bottom:0" placeholder="Type message...">
+              <button id="btnSendChat">Send</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
   </div>
 </div>
 
 <script type="module">
-  // ... (Keep existing imports)
+  import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+  import {getAuth,signInWithPopup,GoogleAuthProvider,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+  import {getDatabase,ref,push,onValue,remove,serverTimestamp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-database.js";
 
-  // --- ADDED MODAL UTILITY ---
-  const modal = document.getElementById('customModal');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalMsg = document.getElementById('modalMsg');
-  const modalActions = document.getElementById('modalActions');
-  const modalIcon = document.getElementById('modalIcon');
+  const firebaseConfig={
+    apiKey:"AIzaSyDLvkRwSpd-hbPaDP31pV1H-4N5_Re-_xc",
+    authDomain:"learnermanagementsystem-f3b6a.firebaseapp.com",
+    databaseURL:"https://learnermanagementsystem-f3b6a-default-rtdb.firebaseio.com",
+    projectId:"learnermanagementsystem-f3b6a"
+  };
 
-  function openModal({title, message, icon, type, onConfirm}) {
-    modalTitle.innerText = title;
-    modalMsg.innerText = message;
-    modalIcon.innerHTML = `<i data-lucide="${icon}" style="width:48px; height:48px; color:${type === 'danger' ? 'var(--danger)' : 'var(--success)'}"></i>`;
-    modalActions.innerHTML = '';
+  const app=initializeApp(firebaseConfig);
+  const auth=getAuth(app);
+  const db=getDatabase(app);
+  lucide.createIcons();
+
+  const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dsbzvgotw/upload";
+  const CLOUDINARY_PRESET = "alinamodiba";
+  const courses = ["BCom Accounting", "BSc Computer Science", "LLB Law", "Diploma in IT"];
+  
+  let unreadCount = 0;
+  let isChatActive = false;
+
+  // --- MODAL SYSTEM ---
+  function showModal({title, body, type, onConfirm}) {
+    const overlay = document.getElementById('modal-overlay');
+    const icon = document.getElementById('modal-icon');
+    const footer = document.getElementById('modal-footer');
     
-    if (onConfirm) {
-      // Confirmation Mode
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-body').innerText = body;
+    footer.innerHTML = '';
+    
+    if(type === 'confirm') {
+      icon.innerHTML = '<i data-lucide="help-circle" style="color:var(--warning); width:48px; height:48px"></i>';
       const cancelBtn = document.createElement('button');
-      cancelBtn.innerText = 'Cancel';
-      cancelBtn.style.background = '#e2e8f0';
-      cancelBtn.style.color = 'var(--text-main)';
-      cancelBtn.onclick = () => modal.style.display = 'none';
+      cancelBtn.innerText = "Cancel"; cancelBtn.className = "secondary";
+      cancelBtn.onclick = () => overlay.style.display = 'none';
       
-      const confirmBtn = document.createElement('button');
-      confirmBtn.innerText = 'Yes, Proceed';
-      confirmBtn.className = 'danger';
-      confirmBtn.onclick = () => { onConfirm(); modal.style.display = 'none'; };
-      
-      modalActions.appendChild(cancelBtn);
-      modalActions.appendChild(confirmBtn);
-    } else {
-      // Success Notification Mode
       const okBtn = document.createElement('button');
-      okBtn.innerText = 'Continue';
-      okBtn.className = 'success';
-      okBtn.style.width = '100%';
-      okBtn.onclick = () => modal.style.display = 'none';
-      modalActions.appendChild(okBtn);
+      okBtn.innerText = "Yes, Remove"; okBtn.className = "danger";
+      okBtn.onclick = () => { onConfirm(); overlay.style.display = 'none'; };
+      
+      footer.append(cancelBtn, okBtn);
+    } else {
+      icon.innerHTML = '<i data-lucide="check-circle" style="color:var(--success); width:48px; height:48px"></i>';
+      const closeBtn = document.createElement('button');
+      closeBtn.innerText = "Awesome"; closeBtn.className = "success";
+      closeBtn.onclick = () => overlay.style.display = 'none';
+      footer.append(closeBtn);
     }
     
-    modal.style.display = 'flex';
+    overlay.style.display = 'flex';
     lucide.createIcons();
   }
 
-  // --- UPDATED ENROLLMENT LOGIC ---
+  function showToast(msg, color = "#10b981") {
+    const toast = document.getElementById('toast');
+    toast.innerText = msg;
+    toast.style.background = color;
+    toast.classList.add('show-toast');
+    setTimeout(() => { toast.classList.remove('show-toast'); }, 3000);
+  }
+
+  onAuthStateChanged(auth, user => {
+    document.getElementById('auth-section').style.display=user?'none':'block';
+    document.getElementById('dashboard').style.display=user?'block':'none';
+    document.getElementById('sidebar-nav').style.display=user?'block':'none';
+    document.getElementById('signOutBtn').style.display=user?'block':'none';
+    if(user) initApp();
+  });
+
+  async function uploadToCloudinary(file) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("upload_preset", CLOUDINARY_PRESET);
+    formData.append("resource_type", "image"); 
+    const resp = await fetch(CLOUDINARY_URL, { method: "POST", body: formData });
+    const data = await resp.json();
+    return data.secure_url;
+  }
+
+  function initApp() {
+    const datalist = document.getElementById('qualOptions');
+    datalist.innerHTML = courses.map(c => `<option value="${c}">${c}</option>`).join('');
+
+    onValue(ref(db, 'learners'), snap => {
+      document.getElementById('stat-enrollment').innerText = snap.size || 0;
+      const list = document.getElementById('directoryList'); list.innerHTML = '';
+      snap.forEach(c => {
+        const d = c.val();
+        // If lastLogin timestamp exists, they are Active, otherwise Pending
+        const statusClass = d.lastLogin ? 'status-active' : 'status-pending';
+        const statusText = d.lastLogin ? 'Active' : 'Pending';
+        
+        list.innerHTML += `<tr>
+          <td>${d.email}</td>
+          <td>${d.assignedQual}</td>
+          <td><span class="status-pill ${statusClass}">${statusText}</span></td>
+          <td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td>
+        </tr>`;
+      });
+    });
+
+    onValue(ref(db, 'submissions'), snap => {
+      document.getElementById('stat-submissions').innerText = snap.size || 0;
+      const table = document.getElementById('submissionTable'); table.innerHTML = '';
+      snap.forEach(c => {
+        const d = c.val();
+        table.innerHTML += `<tr><td>${d.studentEmail}</td><td>${d.assignmentTitle}</td><td>${new Date(d.timestamp).toLocaleDateString()}</td><td>PDF Document</td><td><a href="${d.link}" target="_blank" class="view-link"><i data-lucide="external-link" style="width:14px"></i> Open PDF</a></td></tr>`;
+      });
+      lucide.createIcons();
+    });
+
+    onValue(ref(db, 'timetable'), snap => {
+      document.querySelectorAll('.tt-day-col').forEach(col => {
+        const title = col.querySelector('.tt-day-title'); col.innerHTML = ''; col.appendChild(title);
+      });
+      snap.forEach(c => {
+        const d = c.val(); const col = document.querySelector(`.tt-day-col[data-day="${d.day}"]`);
+        if(col) col.innerHTML += `<div class="tt-slot"><b>${d.subject}</b><br>${d.time}<i class="tt-del" onclick="deleteItem('timetable/${c.key}')">×</i></div>`;
+      });
+    });
+
+    onValue(ref(db, 'chats'), snap => {
+      const box = document.getElementById('chat-box'); box.innerHTML = '';
+      snap.forEach(c => {
+        const d = c.val(); const isSelf = d.sender === auth.currentUser.email;
+        box.innerHTML += `<div class="chat-msg ${isSelf?'admin':'student'}"><span class="chat-sender">${isSelf?'Admin':d.sender}</span>${d.text}</div>`;
+      });
+      box.scrollTop = box.scrollHeight;
+    });
+  }
+
   document.getElementById('provisionBtn').onclick = async () => {
     const email = document.getElementById('newLearnerEmail').value;
     const qual = document.getElementById('qualSelect').value;
     const subjects = document.getElementById('learnerSubjects').value;
     if(email && qual) {
-        await push(ref(db, 'learners'), {
-          email, 
-          assignedQual: qual, 
-          subjects, 
-          status: 'pending', // Added pending status
-          timestamp: serverTimestamp()
-        });
-        
-        // Show Modern Modal
-        openModal({
-          title: 'Enrollment Successful',
-          message: `${email} has been added to the course system.`,
-          icon: 'check-circle'
-        });
-
-        document.getElementById('newLearnerEmail').value = '';
-        document.getElementById('qualSelect').value = '';
-        document.getElementById('learnerSubjects').value = '';
-    } else { showToast("Email and Course are required", "#ef4444"); }
+      await push(ref(db, 'learners'), {email, assignedQual: qual, subjects, timestamp: serverTimestamp()});
+      showModal({
+        title: "Learner Enrolled!",
+        body: `Access has been provisioned for ${email}. They will show as 'Pending' until their first login.`,
+        type: "success"
+      });
+      document.getElementById('newLearnerEmail').value = '';
+      document.getElementById('qualSelect').value = '';
+      document.getElementById('learnerSubjects').value = '';
+    } else { showToast("Email and Course required", "#ef4444"); }
   };
 
-  // --- UPDATED REMOVAL LOGIC ---
   window.deleteLearnerConfirm = key => {
-    openModal({
-      title: 'Confirm Removal',
-      message: 'Are you sure you want to remove this learner? This will permanently delete their record.',
-      icon: 'alert-triangle',
-      type: 'danger',
+    showModal({
+      title: "Remove Learner?",
+      body: "Are you sure? This will revoke their access and remove them from the directory. This action is permanent.",
+      type: "confirm",
       onConfirm: () => {
         remove(ref(db, 'learners/' + key));
-        showToast("Learner removed from directory", "#f59e0b");
+        showToast("Learner removed successfully", "#f59e0b");
       }
     });
   };
 
-  // --- UPDATED DIRECTORY UI (To show Pending/Active) ---
-  onValue(ref(db, 'learners'), snap => {
-    document.getElementById('stat-enrollment').innerText = snap.size || 0;
-    const list = document.getElementById('directoryList'); list.innerHTML = '';
-    snap.forEach(c => {
-      const data = c.val();
-      // Logic: If they have logged in (lastLogin exists), they are active, otherwise pending
-      const statusText = data.lastLogin ? 'Active' : 'Pending';
-      const statusColor = data.lastLogin ? 'var(--success)' : 'var(--warning)';
+  // --- POSTING UTILS ---
+  document.getElementById('btnPostMat').onclick = async (e) => {
+    const file = document.getElementById('matFileInput').files[0];
+    const title = document.getElementById('matTitle').value;
+    const qual = document.getElementById('matQual').value;
+    if(!file || !title || !qual) return showToast("All fields required", "#ef4444");
+    e.target.disabled = true; e.target.innerText = "Uploading...";
+    const link = await uploadToCloudinary(file);
+    await push(ref(db, 'materials'), {title, qual, link});
+    showToast("Material Posted!");
+    e.target.disabled = false; e.target.innerText = "Post Material";
+  };
 
-      list.innerHTML += `<tr>
-        <td>${data.email}</td>
-        <td>${data.assignedQual}</td>
-        <td><span style="font-size:10px; font-weight:800; color:${statusColor}; border:1px solid ${statusColor}; padding:2px 6px; border-radius:4px; text-transform:uppercase;">${statusText}</span></td>
-        <td><button class="danger" onclick="deleteLearnerConfirm('${c.key}')">Remove</button></td>
-      </tr>`;
-    });
+  document.getElementById('btnPostAss').onclick = async (e) => {
+    const file = document.getElementById('assFileInput').files[0];
+    const title = document.getElementById('assTitle').value;
+    const qual = document.getElementById('assQual').value;
+    if(!file || !title || !qual) return showToast("All fields required", "#ef4444");
+    e.target.disabled = true; e.target.innerText = "Uploading...";
+    const link = await uploadToCloudinary(file);
+    await push(ref(db, 'assignments'), {title, qual, dueDate: document.getElementById('assDate').value, link});
+    showToast("Assignment Issued!");
+    e.target.disabled = false; e.target.innerText = "Assign Work";
+  };
+
+  document.getElementById('btnAddTT').onclick = async () => {
+    const day = document.getElementById('ttDay').value, time = document.getElementById('ttTime').value, subject = document.getElementById('ttSubject').value;
+    if(day && time && subject) await push(ref(db, 'timetable'), {day, time, subject});
+  };
+
+  document.getElementById('btnSendChat').onclick = async () => {
+    const text = document.getElementById('chatInput').value;
+    if(text) await push(ref(db, 'chats'), {text, sender: auth.currentUser.email, timestamp: serverTimestamp()});
+    document.getElementById('chatInput').value = '';
+  };
+
+  window.deleteItem = path => remove(ref(db, path));
+
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.onclick = () => {
+      const target = link.dataset.target;
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+      document.getElementById('view-title').textContent = link.querySelector('span').innerText;
+    };
   });
 
-  // ... (Keep the rest of your logic exactly the same)
+  document.getElementById('googleSignInBtn').onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+  document.getElementById('signOutBtn').onclick = () => signOut(auth);
 </script>
+</body>
+</html>
